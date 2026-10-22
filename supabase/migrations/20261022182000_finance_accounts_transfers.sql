@@ -150,6 +150,8 @@ revoke all on function public.finance_record_transfer(uuid, uuid, bigint, date) 
 grant execute on function public.finance_record_transfer(uuid, uuid, bigint, date) to authenticated;
 
 -- SECURITY INVOKER is critical; otherwise a view could bypass the underlying RLS.
+-- Current balance is exposed as decimal text so PostgREST/JS never rounds values
+-- larger than Number.MAX_SAFE_INTEGER.
 create view public.finance_transfer_legs with (security_invoker = true) as
   select t.id as transfer_id, t.owner_id, t.from_account_id as account_id,
          -t.amount_cents::numeric as signed_amount_cents, t.effective_date
@@ -166,7 +168,7 @@ select a.id as account_id, a.owner_id, a.space_id, a.account_type, a.name,
        (a.opening_balance_cents::numeric +
         coalesce((select sum(l.signed_amount_cents)
                    from public.finance_transfer_legs l where l.account_id = a.id), 0::numeric)
-       ) as current_balance_cents
+       )::text as current_balance_cents
   from public.finance_accounts a;
 
 revoke all on public.finance_transfer_legs, public.finance_account_balances from public, anon, authenticated;

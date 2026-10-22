@@ -87,9 +87,10 @@ async function DashboardContent({ searchParams }: { searchParams: Promise<Params
   const visibleAccounts = (scopedRaw ?? []) as Balance[];
   const transfers = (transfersRaw ?? []) as Transfer[];
   const activeAccounts = accounts.filter(account => !account.archived_at);
-  const shownAccounts = visibleAccounts.filter(account => !account.archived_at);
-  const selectedTotal = sumCents(shownAccounts);
-  const globalTotal = sumCents(activeAccounts);
+  const selectedTotal = sumCents(visibleAccounts);
+  // Archived accounts retain their reference in historical totals: otherwise
+  // one half of an internal transfer disappears from the consolidation.
+  const globalTotal = sumCents(accounts);
   const names = new Map(accounts.map(account => [account.account_id, account.name]));
   const notice = params.notice ? noticeText[params.notice] : null;
 
@@ -97,7 +98,7 @@ async function DashboardContent({ searchParams }: { searchParams: Promise<Params
     <div className="finance-heading">
       <div><p className="eyebrow">FINANCE AI · M01</p><h1>Seus espaços financeiros.</h1>
         <p>Contas e transferências internas, sem conexão bancária ou movimentação de fundos.</p></div>
-      <div className="finance-total"><span>Referência consolidada</span><strong>{formatBrlCents(globalTotal)}</strong><small>Saldo informado + transferências internas. Não representa extrato bancário.</small></div>
+      <div className="finance-total"><span>Referência consolidada</span><strong>{formatBrlCents(globalTotal)}</strong><small>Inclui contas arquivadas para preservar o histórico. Não representa extrato bancário nem dinheiro disponível.</small></div>
     </div>
     {notice && <p className="finance-notice" role="status">{notice}</p>}
     <div className="finance-tabs" aria-label="Selecionar espaço">
@@ -111,7 +112,7 @@ async function DashboardContent({ searchParams }: { searchParams: Promise<Params
     </section> : <>
       <section className="finance-panel">
         <div className="finance-panel-header"><div><p className="eyebrow">{selected.display_name.toUpperCase()}</p><h2>Contas cadastradas</h2></div>
-          <div><small>Saldo de referência no espaço</small><strong>{formatBrlCents(selectedTotal)}</strong></div>
+          <div><small>Referência histórica (inclui arquivadas)</small><strong>{formatBrlCents(selectedTotal)}</strong></div>
         </div>
         {visibleAccounts.length === 0 ? <p>Nenhuma conta cadastrada neste espaço.</p> :
           <div className="finance-account-list">{visibleAccounts.map(account =>

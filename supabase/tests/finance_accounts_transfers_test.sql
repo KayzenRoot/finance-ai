@@ -1,6 +1,6 @@
 -- pgTAP M01: synthetic users and balances, rolled back after each run.
 begin;
-select plan(26);
+select plan(28);
 select has_table('public', 'finance_accounts', 'accounts table exists');
 
 select has_table('public', 'finance_transfers', 'internal transfer table exists');
@@ -39,7 +39,7 @@ select is((select count(*)::integer from public.finance_accounts),3,'owner sees 
 
 select is((select count(*)::integer from public.finance_accounts where space_id='41000000-0000-4000-8000-000000000041'),2,'personal space filter');
 
-select is((select sum(current_balance_cents) from public.finance_account_balances),17000::numeric,'opening total in integer cents');
+select is((select sum(current_balance_cents::numeric) from public.finance_account_balances),17000::numeric,'opening total in integer cents');
 
 select throws_ok($$update public.finance_accounts set owner_id='32000000-0000-4000-8000-000000000032'
  where id='51000000-0000-4000-8000-000000000051'$$,
@@ -49,13 +49,13 @@ select ok(public.finance_record_transfer(
  '51000000-0000-4000-8000-000000000051',
  '52000000-0000-4000-8000-000000000052',3000,current_date) is not null, 'transfer recorded via RPC');
 
-select is((select current_balance_cents from public.finance_account_balances where account_id='51000000-0000-4000-8000-000000000051'),7000::numeric,'origin has debit');
+select is((select current_balance_cents::numeric from public.finance_account_balances where account_id='51000000-0000-4000-8000-000000000051'),7000::numeric,'origin has debit');
 
-select is((select current_balance_cents from public.finance_account_balances where account_id='52000000-0000-4000-8000-000000000052'),8000::numeric,'destination has credit');
+select is((select current_balance_cents::numeric from public.finance_account_balances where account_id='52000000-0000-4000-8000-000000000052'),8000::numeric,'destination has credit');
 
 select is((select sum(signed_amount_cents) from public.finance_transfer_legs),0::numeric,'paired legs consolidate to zero');
 
-select is((select sum(current_balance_cents) from public.finance_account_balances),17000::numeric,'transfer does not double count consolidated cash');
+select is((select sum(current_balance_cents::numeric) from public.finance_account_balances),17000::numeric,'transfer does not double count consolidated cash');
 
 select throws_ok($$select public.finance_record_transfer(
  '51000000-0000-4000-8000-000000000051',
@@ -72,6 +72,11 @@ select throws_ok($$update public.finance_accounts set opening_balance_cents=999
  '23514','Account reference balance is frozen after an internal transfer','reference balance cannot be overwritten');
 
 update public.finance_accounts set archived_at=now() where id='52000000-0000-4000-8000-000000000052';
+
+select is((select sum(current_balance_cents::numeric) from public.finance_account_balances),17000::numeric,
+ 'archiving preserves consolidated reference, including historical accounts');
+select is((select pg_typeof(current_balance_cents)::text from public.finance_account_balances limit 1),
+ 'text', 'PostgREST balance payloads preserve arbitrary cent precision as text');
 
 select throws_ok($$select public.finance_record_transfer(
  '51000000-0000-4000-8000-000000000051',

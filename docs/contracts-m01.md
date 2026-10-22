@@ -18,3 +18,7 @@ Work Order: FAI-WO-M01-001, issue #3. **Estado: implementação em PR, ainda nã
 - Conta pode ser renomeada/arquivada. Titular, espaço, moeda e ID são imutáveis; saldo de referência fica congelado depois de qualquer transferência. M02 adicionará lançamentos sem transformar transferência interna em receita/despesa.
 - Valores da loja/pessoal nunca devem aparecer em logs GitHub nem fixtures reais.
 - O backend Supabase hospedado e dados reais permanecem fora de escopo. UI, API e interação completa serão completadas na PR M01 antes de declarar o módulo aprovado.
+
+## Precisão de saldos e histórico arquivado
+
+A coluna `current_balance_cents` da view retorna **texto decimal exato**, não JSON number: transferências de diversas contas podem produzir agregados acima de `Number.MAX_SAFE_INTEGER` mesmo com cada montante individual dentro do limite. A interface usa `BigInt` e formatação pt-BR, nunca `Number(...)` ou aritmética de ponto flutuante. O total consolidado e os totais por espaço incluem contas arquivadas para que arquivar uma conta não apague metade de uma transferência histórica; **não representam saldo disponível em banco ou caixa atual**. Contas arquivadas não admitem novas transferências.
