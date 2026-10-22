@@ -10,7 +10,7 @@ Work Order: `FAI-WO-M00-001`. Estado: contrato preliminar da PR #16; fica congel
 | Sessão web | Servidor usa `auth.getUser()` e rejeita sessão inválida; Proxy atualiza sessão | Build/typecheck e inspeção de código; E2E de revogação de sessão ainda pendente |
 | Titular único | O UUID exige igualdade com `FINANCE_AI_OWNER_USER_ID` no servidor **e** provisionamento administrativo no banco | Teste de RLS + RPC `finance_is_authorized_owner()` |
 | Espaços | `public.finance_spaces` expõe `id: uuid`, `owner_id: uuid`, `space_type: personal \| store`, `display_name: string[1..80]`, `created_at: timestamptz` | Migração SQL, testes pgTAP/PGlite |
-| Escopo | Exatamente um espaço de cada tipo por `owner_id`; nenhuma carteira não provisionada pode criar ou acessar espaços | `unique(owner_id,space_type)` e quatro políticas RLS |
+| Escopo | No máximo um espaço de cada tipo por `owner_id`; a criação efetiva pertence ao módulo M01; nenhuma carteira não provisionada pode criar ou acessar espaços | `unique(owner_id,space_type)` e quatro políticas RLS |
 | Administração | `finance_private.authorized_owners` aceita no máximo um registro e não é concedida a usuários web | Constraint `singleton`, schema privado, grant/revoke explícitos |
 | Consulta de autorização | `public.finance_is_authorized_owner(): boolean`; sem parâmetro de ID, usa a identidade JWT ativa | Teste RPC com duas carteiras sintéticas |
 
