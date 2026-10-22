@@ -268,6 +268,108 @@ const { data: foreignRpc, error: foreignRpcError } = await second.client
 assert.ok(foreignRpcError, "unauthorized wallet must not transfer the owner's funds even internally");
 assert.equal(foreignRpc, null);
 
+// M02 Data API smoke: use ephemeral, unprovisioned wallets only.
+const { data: incomeCategory, error: incomeCategoryError } = await first.client
+  .from("finance_categories")
+  .insert({ owner_id: first.userId, space_id: firstSpace.id, kind: "income", name: "Synthetic income" })
+  .select("id").single();
+assert.equal(incomeCategoryError, null);
+assert.ok(incomeCategory?.id);
+const { data: expenseCategory, error: expenseCategoryError } = await first.client
+  .from("finance_categories")
+  .insert({ owner_id: first.userId, space_id: storeSpace.id, kind: "expense", name: "Synthetic expense" })
+  .select("id").single();
+assert.equal(expenseCategoryError, null);
+assert.ok(expenseCategory?.id);
+const { data: foreignCategories, error: foreignCategoriesError } = await second.client
+  .from("finance_categories").select("id");
+assert.equal(foreignCategoriesError, null);
+assert.deepEqual(foreignCategories, []);
+
+const { data: forbiddenEntry, error: forbiddenEntryError } = await first.client
+  .from("finance_ledger_entries")
+  .insert({ owner_id: first.userId, space_id: firstSpace.id,
+    account_id: personalAccount.id, category_id: incomeCategory.id,
+    kind: "income", amount_cents: "1", effective_date: "2026-02-01",
+    description: "Unauthorized direct insertion", entry_role: "original" }).select("id");
+assert.ok(forbiddenEntryError, "authenticated users cannot directly write the ledger");
+assert.equal(forbiddenEntry, null);
+
+const { data: incorrectSpace, error: incorrectSpaceError } = await first.client
+  .rpc("finance_record_entry", {
+    p_account_id: personalAccount.id, p_category_id: expenseCategory.id,
+    p_kind: "expense", p_amount_cents: "50",
+    p_effective_date: "2026-02-01", p_description: "Denied cross-space",
+  });
+assert.ok(incorrectSpaceError, "category of store cannot be used in personal account");
+assert.equal(incorrectSpace, null);
+
+const { data: incomeEntry, error: incomeEntryError } = await first.client
+  .rpc("finance_record_entry", {
+    p_account_id: personalAccount.id, p_category_id: incomeCategory.id,
+    p_kind: "income", p_amount_cents: "500",
+    p_effective_date: "2026-02-01", p_description: "Synthetic income",
+  });
+assert.equal(incomeEntryError, null);
+assert.match(incomeEntry, /^[0-9a-f-]{36}$/i);
+
+const {data: changedReference, error: changedReferenceError} = await first.client
+  .from("finance_accounts")
+  .update({opening_balance_cents:"999"})
+  .eq("id",personalAccount.id).select("id");
+assert.ok(changedReferenceError, "reference cannot be rewritten after M02 ledger entry");
+assert.equal(changedReference,null);
+
+const { data: expenseEntry, error: expenseEntryError } = await first.client
+  .rpc("finance_record_entry", {
+    p_account_id: storeAccount.id, p_category_id: expenseCategory.id,
+    p_kind: "expense", p_amount_cents: "200",
+    p_effective_date: "2026-02-01", p_description: "Synthetic expense",
+  });
+assert.equal(expenseEntryError, null);
+assert.ok(expenseEntry);
+
+const { data: actualRows, error: actualRowsError } = await first.client
+  .from("finance_account_balances").select("account_id,current_balance_cents");
+assert.equal(actualRowsError, null);
+assert.equal(actualRows.length, 2);
+const balances = new Map(actualRows.map((a) => [a.account_id, BigInt(a.current_balance_cents)]));
+assert.equal(balances.get(personalAccount.id), 10250n);
+assert.equal(balances.get(storeAccount.id), 5052n);
+assert.equal([...balances.values()].reduce((a, b) => a + b, 0n), 15302n);
+
+const { data: correctedEntry, error: correctedEntryError } = await first.client
+  .rpc("finance_correct_entry", {
+    p_entry_id: incomeEntry, p_category_id: incomeCategory.id,
+    p_amount_cents: "650", p_effective_date: "2026-02-01",
+    p_description: "Corrected synthetic income",
+  });
+assert.equal(correctedEntryError, null);
+assert.ok(correctedEntry);
+const { data: canceledEntry, error: canceledEntryError } = await first.client
+  .rpc("finance_cancel_entry", { p_entry_id: expenseEntry });
+assert.equal(canceledEntryError, null);
+assert.ok(canceledEntry);
+
+const { data: history, error: historyError } = await first.client
+  .from("finance_ledger_entries").select("id,entry_role,reverses_entry_id,corrects_entry_id");
+assert.equal(historyError, null);
+assert.equal(history.length, 5, "origins, reversals and corrected entry retained");
+const { data: afterCorrection, error: afterCorrectionError } = await first.client
+  .from("finance_account_balances").select("account_id,current_balance_cents");
+assert.equal(afterCorrectionError, null);
+const correctedTotal = afterCorrection.reduce((sum, a) => sum + BigInt(a.current_balance_cents), 0n);
+assert.equal(correctedTotal, 15652n, "correction and cancellation preserve exact consolidated balance");
+
+const { data: foreignEntries, error: foreignEntriesError } = await second.client
+  .from("finance_ledger_entries").select("id");
+assert.equal(foreignEntriesError, null);
+assert.deepEqual(foreignEntries, []);
+const { data: foreignCancel, error: foreignCancelError } = await second.client
+  .rpc("finance_cancel_entry", { p_entry_id: correctedEntry });
+assert.ok(foreignCancelError);
+assert.equal(foreignCancel, null);
+
 revokeSyntheticOwner(first.userId);
 const { data: afterRevocation, error: afterRevocationError } = await first.client.rpc("finance_is_authorized_owner");
 assert.equal(afterRevocationError, null);
@@ -287,8 +389,13 @@ const { data: revokedTransfers, error: revokedTransfersError } = await first.cli
   .from("finance_transfers").select("id");
 assert.equal(revokedTransfersError, null);
 assert.deepEqual(revokedTransfers, [], "revocation blocks historical transfer reads");
+const {data: revokedLedger,error: revokedLedgerError}=await first.client
+  .from("finance_ledger_entries").select("id");
+assert.equal(revokedLedgerError,null);
+assert.deepEqual(revokedLedger,[],"revoked owner loses M02 ledger Data API access");
+
 
 
 await first.client.auth.signOut();
 await second.client.auth.signOut();
-console.log("Synthetic EVM login, M00/M01 Data API RLS, cross-space transfer neutrality and revocation checks passed.");
+console.log("Synthetic EVM M00/M01/M02 Data API RLS, immutable corrections, transfers and revocation passed.");

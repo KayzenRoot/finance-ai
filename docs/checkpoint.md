@@ -4,7 +4,7 @@
 
 - **M00 integrado** via PR #16, squash SHA `04797f1d058b5a37586383b60a5a3e6dc4037926`, após 10/10 checks SUCCESS. Issue #2 fechada.
 - **Ruleset** #25657724: `main` protegida, `required_approving_review_count=0`, cinco checks exigidos, squash, histórico linear, branch up-to-date, sem force push, deleção ou bypass.
-- **M01**: Issue #3, PR #17 (DRAFT) e branch `feature/fai-m01-spaces-accounts-transfers`. Implementados espaços Pessoal/Loja, contas, renomeação/arquivamento, transferências internas via RPC, BigInt/BRL em centavos, views `security_invoker`, RLS e Data API testada. HEAD de código `f4096b1fc886877bde781e9fcc8c978381ab13a3`: CI, Dependency Review, CodeQL JS/TS, Socket Security e Supabase SUCCESS; 49/49 pgTAP + smoke EVM/Data API e restore sintéticos passaram. Integração à main não realizada.
+- **M01 integrado**: PR #17 squash-merged na `main` protegida `2fcdb5bf21ddb5f3293585a554f56525d34d2bd7`, issue #3 closed; 49/49 pgTAP e gates de segurança aprovados no HEAD da PR.
 - **Evidência de banco**: run [39831779921](https://github.com/KayzenRoot/finance-ai/actions/runs/39831779921), migração/RLS/Web3 e restauração sintéticas SUCCESS. Testes M00/M01 verificados; sem projeto privado de produção, pagamentos ou dados reais.
 - **Produção separada**: secret scanning/push protection ainda precisam de confirmação administrativa, bem como backup independente, implantação e testes de carteira real. O histórico abaixo inclui bloqueios anteriores já resolvidos; o estado acima prevalece.
 
@@ -14,7 +14,7 @@
 - Branch principal: main.
 - Baseline inicial: 7f6997f8e5797e43f2cc8c1b282998112cb09265.
 - Branch de planejamento: planning/FAI-PLAN-001-source-pack.
-- HEAD integrado na `main`: `04797f1d058b5a37586383b60a5a3e6dc4037926`.
+- HEAD integrado na `main`: `2fcdb5bf21ddb5f3293585a554f56525d34d2bd7` (M01, PR #17).
 - Branch local de implementação: `feature/fai-m00-secure-foundation`.
 - Código de produto: scaffold Next.js 16/Supabase SSR na PR #16, incluindo correção de titular único. Consulte o HEAD atual da PR para evitar referência obsoleta.
 - Projeto Supabase hospedado para Finance AI: ainda não criado.
@@ -102,3 +102,32 @@ Na PR #17 foram incluídos testes end-to-end **na Data API Supabase local** em `
 - **Proteção main**: ruleset #25657724 ativo, 0 aprovações humanas obrigatórias e 5 required checks, todos SUCCESS no HEAD de código. 0 threads pendentes.
 - **Riscos pendentes antes de uso real**, não confundidos com CI: não há projeto Supabase privado hospedado, dados financeiros reais, teste E2E de navegador/carteira real, Secret Scanning/Push Protection confirmados administrativamente ou backup independente de produção. Nada disso foi provisionado ou gasto.
 - **Status**: módulo pronto para avaliação automatizada final. Este commit documental altera o HEAD; revalidar required checks nele antes de promover ao canônico da main. Não fazer deploy.
+
+### M01 fechado / M02 iniciado (22/10/2026)
+
+A PR #17 foi integrada por squash normal na main `2fcdb5bf21ddb5f3293585a554f56525d34d2bd7`, depois de 5/5 required checks SUCCESS, CodeQL JS/TS e Socket Security SUCCESS; 49/49 pgTAP (21 M00, 28 M01), EVM/Data API sintéticos e restore em CI. Issue #3 encerrada como completed. M02 issue #4 / branch `feature/fai-m02-auditable-ledger`: primeira fatia do ledger auditável, categoria por espaço, RPCs de inclusão/cancelamento/correção e saldos derivados. Status M02 IN PROGRESS até testes, interface, filtros e Evidence Bundle final. Sem deploy, gastos ou dados reais.
+
+### M02 — Evidence Bundle verified on ccf31b03a09abaa48657d424f57b9ca19ac60bf2 (2026-10-22)
+
+- M01: PR #17 merged normally (squash) into protected main at 2fcdb5bf21ddb5f3293585a554f56525d34d2bd7; issue #3 closed as completed.
+- M02: PR #18, issue #4, branch feature/fai-m02-auditable-ledger. HEAD of validated code: ccf31b03a09abaa48657d424f57b9ca19ac60bf2; M02 not merged.
+- CI: [run 39840031471](https://github.com/KayzenRoot/finance-ai/actions/runs/39840031471) — SUCCESS (Markdown lint, lint, typecheck, tests, build).
+- Dependency Review: [run 39840031593](https://github.com/KayzenRoot/finance-ai/actions/runs/39840031593) — SUCCESS.
+- CodeQL JS/TS: [run 39840031475](https://github.com/KayzenRoot/finance-ai/actions/runs/39840031475) — SUCCESS. Aggregated CodeQL status neutral (not required); SonarCloud and Socket Security checks SUCCESS.
+- Supabase: [run 39840031499](https://github.com/KayzenRoot/finance-ai/actions/runs/39840031499) — SUCCESS; Files=3, Tests=84, Result: PASS (M00 21 + M01 28 + M02 35). Synthetic EVM Data API owner isolation, authenticated entries, immutable correction/cancellation, internal transfers and revocation PASS. Synthetic export/restore PASS.
+- M02 delivered: categories by owner/space/type; RLS-protected immutable ledger, exact BRL cents, balance view with neutral internal transfers; SSR interface to create/rename/archive categories, post/correct/cancel entries and filter history by kind, category and date. Filtered history uses a separate reversal lookup to avoid displaying canceled entries as active.
+- Findings corrected: non-namespaced pgTAP variables; Next.js protected route requiring Suspense under cache components.
+- This document update creates a new HEAD requiring its own checks. Before final promotion validate HEAD, five required checks, CodeQL, Socket Security, and ruleset. No M02 merge, deploy, spending, real financial data, or M03.
+
+### M02 — Correção de integridade pré-READY
+
+Auditoria identificou risco de reescrita silenciosa do saldo/data inicial de conta após lançamentos do M02, sem transferências M01. Adicionado `finance_ledger_reference_guard` para bloquear alterações de `opening_balance_cents` e `opening_balance_date` após existir evento de ledger, preservando renomeação/arquivamento. Acrescentados **2 testes pgTAP** e um negativo EVM REST. Meta: **86 pgTAP** (21+28+37), além da smoke Data API, exigindo novos checks. Bundle anterior no SHA `057acb69c8baf82daa204ef9b031c419f7602d2b`: Supabase [39841322596](https://github.com/KayzenRoot/finance-ai/actions/runs/39841322596) SUCCESS, 84/84, smoke PASS, restore sintético PASS; CI [39841322559](https://github.com/KayzenRoot/finance-ai/actions/runs/39841322559), Dependency [39841322616](https://github.com/KayzenRoot/finance-ai/actions/runs/39841322616), CodeQL JS/TS [39841322554](https://github.com/KayzenRoot/finance-ai/actions/runs/39841322554), SonarCloud e Socket PASS. O job Markdown lint concluiu etapas com sucesso mas status agregado ainda estava IN_PROGRESS na última consulta. **Não utilizar o bundle anterior como PASS no novo commit.** M02 sem merge/deploy/gastos/dados reais; PR DRAFT até todos gates do novo HEAD verdes.
+
+### M02 — 86/86 proven on implementation HEAD `3be49c6380d55b24b7220ef76b37f95f182c2fb4`
+
+- Revalidated GitHub protected main: `2fcdb5bf21ddb5f3293585a554f56525d34d2bd7`. Ruleset #25657724 active; `required_approving_review_count=0`; no bypass; five required checks green, zero unresolved review threads.
+- CI [39843603198](https://github.com/KayzenRoot/finance-ai/actions/runs/39843603198): SUCCESS (Markdown lint, application checks, lint, types, unit tests, build). Dependency Review [39843603233](https://github.com/KayzenRoot/finance-ai/actions/runs/39843603233): SUCCESS.
+- CodeQL JS/TS [39843603228](https://github.com/KayzenRoot/finance-ai/actions/runs/39843603228): SUCCESS. SonarCloud and Socket Security PR Alerts / Project Report: SUCCESS. Aggregate CodeQL `neutral` is not among required checks.
+- Supabase [39843603200](https://github.com/KayzenRoot/finance-ai/actions/runs/39843603200): SUCCESS. Log `Files=3, Tests=86, Result: PASS`; M00=21, M01=28, M02=37. EVM synthetic Data API smoke: owner, scope, immutable correction, denied initial-balance rewrite, transfers, revocation PASS. Synthetic restore rehearsal PASS.
+- Review finding fixed: account reference amount and date now freeze after M02 ledger activity; two new pgTAP negative cases and one REST case cover the bypass.
+- This checkpoint amendment itself creates a new Git SHA. Promote PR #18 to READY only after all five required checks and the security workflows are checked again against that final SHA. Do not merge or deploy in this work order.

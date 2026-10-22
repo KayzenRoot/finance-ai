@@ -116,3 +116,10 @@ h1 { max-width: 720px; margin: 24px 0 20px; font-family: Georgia, "Times New Rom
 .finance-history-row span { display: grid; gap: 5px; font-size: 13px; }
 .finance-history-row small { display: block; }
 @media(max-width:700px) { .finance-heading { flex-direction: column; } .finance-total { width: 100%; } .finance-form { grid-template-columns: 1fr; } .finance-panel-header { align-items: start; } .finance-account { align-items: start; } .dashboard-main { padding: 28px 0; } }
+
+/* M02 responsive ledger and inline audit forms */
+.finance-panel details{margin:8px 0}
+.finance-panel details summary{cursor:pointer;color:var(--green-dark);font-size:13px}
+.finance-panel details input,.finance-panel details select{background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:9px;min-width:0;width:100%}
+.finance-panel details .finance-form{margin-top:12px}
+.finance-workspace header a:not(.brand){font-size:13px;color:var(--green-dark);text-decoration:underline}
