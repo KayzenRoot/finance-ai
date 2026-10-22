@@ -102,3 +102,7 @@ Na PR #17 foram incluídos testes end-to-end **na Data API Supabase local** em `
 - **Proteção main**: ruleset #25657724 ativo, 0 aprovações humanas obrigatórias e 5 required checks, todos SUCCESS no HEAD de código. 0 threads pendentes.
 - **Riscos pendentes antes de uso real**, não confundidos com CI: não há projeto Supabase privado hospedado, dados financeiros reais, teste E2E de navegador/carteira real, Secret Scanning/Push Protection confirmados administrativamente ou backup independente de produção. Nada disso foi provisionado ou gasto.
 - **Status**: módulo pronto para avaliação automatizada final. Este commit documental altera o HEAD; revalidar required checks nele antes de promover ao canônico da main. Não fazer deploy.
+
+### M01 fechado / M02 iniciado (22/10/2026)
+
+A PR #17 foi integrada por squash normal na main `2fcdb5bf21ddb5f3293585a554f56525d34d2bd7`, depois de 5/5 required checks SUCCESS, CodeQL JS/TS e Socket Security SUCCESS; 49/49 pgTAP (21 M00, 28 M01), EVM/Data API sintéticos e restore em CI. Issue #3 encerrada como completed. M02 issue #4 / branch `feature/fai-m02-auditable-ledger`: primeira fatia do ledger auditável, categoria por espaço, RPCs de inclusão/cancelamento/correção e saldos derivados. Status M02 IN PROGRESS até testes, interface, filtros e Evidence Bundle final. Sem deploy, gastos ou dados reais.
