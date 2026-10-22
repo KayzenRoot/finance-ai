@@ -18,10 +18,13 @@ Estado: decisões conceituais 001–004 aprovadas em conversa; direção de Supa
 | DEC-012 | Cloudinary fica condicionado a uma funcionalidade real de imagem. | Aprovada como condição | V1 atual não usa anexos/imagens; evita integração sem necessidade. |
 | DEC-013 | CI usa GitHub Actions e recursos nativos de segurança; ações referenciadas por SHA e atualizadas pelo Dependabot. | Direção aprovada | Feedback rápido, pouca configuração e execução gratuita em runner padrão enquanto o repo é público. |
 | DEC-014 | Saldos cripto entram como snapshots somente leitura e não como caixa para pagamento. | Aprovada na direção da V1 | Valor de mercado e liquidez têm significados diferentes. |
-| DEC-015 | SonarQube Cloud só entra após confirmar instalação no repositório, integração ativa e elegibilidade do plano OSS gratuito. | Pendente da auditoria de apps | Evita duplicar análise ou assumir uma integração inexistente. |
+| DEC-015 | SonarQube Cloud pode complementar a qualidade do código depois de confirmar vínculo com Finance AI, elegibilidade OSS e quality gate útil. | Proposta / pendente de configuração no repositório | O app aparece na conta do titular, mas as capturas não mostram escopo de repositório e não há execução do Sonar no HEAD auditado. |
+| DEC-016 | GitHub Actions é o único provedor obrigatório de CI; CircleCI e Cirrus CI ficam como alternativas, não paralelos. | Proposta do FAI-PLAN-001 / revisão pendente | Runners padrão do GitHub são gratuitos em repositório público; executar múltiplos CI acrescentaria tempo e manutenção sem evidência de ganho. |
+| DEC-017 | Manter Dependabot no lugar de Renovate; avaliar Codecov/Chromatic/StepSecurity apenas quando o respectivo uso existir. | Proposta do FAI-PLAN-001 / revisão pendente | Evita duplicidade e gates prematuros; cobertura, UI/Storybook e hardening adicional dependem do scaffold. |
 
 ## Histórico
 
 - 2026-10-22 — Titular aprovou espaços Pessoal/Loja, entrada manual/CSV, prioridades explicáveis, IA explicativa e nenhum pagamento automático.
 - 2026-10-22 — Titular selecionou Supabase, pediu suporte a login com carteira/cripto via provedor como Privy, Cloudinary se imagens forem necessárias e CI GitHub gratuito.
+- 2026-10-22 — Titular forneceu capturas do inventário de apps instalados; a auditoria visual e os limites de evidência foram registrados em [github-app-audit.md](../github-app-audit.md).
 - Nenhum deploy ou projeto Supabase de Finance AI foi criado nesta etapa.
