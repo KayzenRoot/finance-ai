@@ -42,3 +42,9 @@ Endereços públicos são associados a identidade e merecem proteção. Validar 
 ## Resposta a incidentes
 
 Antes de produção, definir revogação de credenciais, restauração, exclusão, comunicação e canal de suporte. Se dado real vazar, interromper publicação, preservar evidência e revogar credenciais afetadas antes de seguir.
+
+## Restrição a um único titular no banco
+
+A política de `finance_spaces` exige **duas condições independentes**: `auth.uid() = owner_id` e presença do usuário autenticado na tabela `finance_private.authorized_owners`. A tabela privada aceita somente um registro, não está exposta pela Data API e só pode ser alterada por administração privilegiada. A função `public.finance_is_authorized_owner()` é `SECURITY DEFINER`, com `search_path` vazio, e retorna apenas autorização para a identidade de quem chama. Contas Web3 autenticadas, mas não provisionadas, não podem criar nem ler espaços, mesmo próprios.
+
+O servidor exige ainda `FINANCE_AI_OWNER_USER_ID` e usa `auth.getUser()` para validar sessão ativa. O identificador real do titular nunca deve ser incluído no repositório nem em logs públicos. Testes usam identidades sintéticas e verificam acesso negado antes do provisionamento e para outra carteira.
