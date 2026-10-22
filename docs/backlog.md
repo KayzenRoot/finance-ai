@@ -18,7 +18,21 @@ Status: issues de planejamento criadas para V1; todas dependências usam IDs est
 | 6 | FAI-M09 — Assistente de IA e rascunhos confirmáveis | M05, M06, M07 | Somente após APIs tipadas |
 | 7 | FAI-M10 — Segurança, backup, recuperação e release | M00 a M09 | Auditoria transversal final |
 
-Issues GitHub: uma issue por módulo, título prefixado com o ID e Work Order no corpo. PRs devem fechar ou referenciar a issue correspondente. Os IDs mantêm rastreio caso números do GitHub mudem.
+Issues GitHub (criadas na PR #1):
+
+- FAI-M00: [issue #2](https://github.com/KayzenRoot/finance-ai/issues/2)
+- FAI-M01: [issue #3](https://github.com/KayzenRoot/finance-ai/issues/3)
+- FAI-M02: [issue #4](https://github.com/KayzenRoot/finance-ai/issues/4)
+- FAI-M03: [issue #5](https://github.com/KayzenRoot/finance-ai/issues/5)
+- FAI-M04: [issue #6](https://github.com/KayzenRoot/finance-ai/issues/6)
+- FAI-M05: [issue #7](https://github.com/KayzenRoot/finance-ai/issues/7)
+- FAI-M06: [issue #8](https://github.com/KayzenRoot/finance-ai/issues/8)
+- FAI-M07: [issue #9](https://github.com/KayzenRoot/finance-ai/issues/9)
+- FAI-M08: [issue #10](https://github.com/KayzenRoot/finance-ai/issues/10)
+- FAI-M09: [issue #11](https://github.com/KayzenRoot/finance-ai/issues/11)
+- FAI-M10: [issue #12](https://github.com/KayzenRoot/finance-ai/issues/12)
+
+Cada issue tem título prefixado com ID e Work Order no corpo. PRs de execução devem fechar ou referenciar a issue correspondente.
 
 ## Ondas de execução
 

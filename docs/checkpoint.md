@@ -12,6 +12,13 @@ Status: Source Pack e backlog inicial propostos pela PR FAI-PLAN-001; aguardando
 - Open Finance: apenas avaliação documental; nenhuma integração.
 - Dado real: não armazenar no repositório público.
 
+## Evidência desta proposta
+
+- PR de planejamento: https://github.com/KayzenRoot/finance-ai/pull/1 (draft).
+- Issues FAI-M00 a FAI-M10: #2–#12.
+- Documentos e links finais ficam listados em docs/backlog.md.
+- Verificação de produto: não aplicável, pois não há código.
+
 ## Resultado proposto
 
 - Source Pack canônico em docs/.
