@@ -27,11 +27,16 @@ async function DashboardContent() {
   const supabase = await createClient();
   if (!supabase) redirect("/login");
 
-  const { data, error } = await supabase.auth.getClaims();
-  if (error || !data?.claims?.sub) redirect("/login");
+  // getUser() revalidates the session with Auth, including server-side revocation.
+  const { data, error } = await supabase.auth.getUser();
+  if (error || !data.user) redirect("/login");
 
   const ownerId = process.env.FINANCE_AI_OWNER_USER_ID;
-  const isOwner = ownerId && data.claims.sub === ownerId;
+  const matchesServerAllowlist = Boolean(ownerId && data.user.id === ownerId);
+  const { data: isProvisioned, error: provisionError } = matchesServerAllowlist
+    ? await supabase.rpc("finance_is_authorized_owner")
+    : { data: false, error: null };
+  const isOwner = matchesServerAllowlist && provisionError === null && isProvisioned === true;
 
   return (
     <div className="dashboard-card">
@@ -46,7 +51,7 @@ async function DashboardContent() {
         <>
           <h1>Acesso ainda não vinculado.</h1>
           <p>A carteira autenticou corretamente, mas esta conta não está autorizada a acessar o espaço financeiro.</p>
-          <div className="setup-note">O titular precisa configurar <code>FINANCE_AI_OWNER_USER_ID</code> no ambiente do servidor antes de liberar qualquer acesso a dados. Nenhum dado foi carregado.</div>
+          <div className="setup-note">O titular precisa configurar <code>FINANCE_AI_OWNER_USER_ID</code> no servidor e ser autorizado na lista privada do banco. Nenhum dado foi carregado. Nenhum dado foi carregado.</div>
         </>
       )}
     </div>
