@@ -11,7 +11,7 @@ Planejamento e CI inicial integrados à `main` pela PR #1. A fundação do produ
 - Espaços Pessoal e Loja separados, contas, lançamentos, obrigações, recebíveis, dívidas, projeções e prioridades explicáveis.
 - Supabase Postgres como banco selecionado; tabelas expostas usam permissões explícitas e RLS por titular.
 - A fundação usa Supabase Auth Web3 nativo para Ethereum (SIWE) e Solana (SIWS). A assinatura serve somente para autenticação; Privy fica adiado enquanto essa opção atende à V1.
-- O acesso ao espaço Finance AI requer ainda uma allowlist de titular no servidor (`FINANCE_AI_OWNER_USER_ID`); carteira autenticada não significa autorização automática.
+- O acesso requer identificação do titular no servidor (`FINANCE_AI_OWNER_USER_ID`) **e** provisionamento administrativo na lista privada `finance_private.authorized_owners` do Supabase; carteira autenticada não significa autorização automática.
 - Carteiras e criptoativos serão somente leitura. Não há assinatura de transação ou movimentação de fundos.
 - Valores de cripto ficam separados de caixa disponível para pagar contas.
 - IA explica cálculos determinísticos e pode preparar rascunhos que exigem confirmação.
