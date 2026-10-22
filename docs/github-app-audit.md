@@ -6,7 +6,7 @@ Status: inventário visual concluído; configuração por repositório ainda nã
 
 O inventário foi transcrito das capturas da página de GitHub Apps instalados na conta pessoal KayzenRoot. A presença do botão `Configure` e do nome do app comprova que ele aparece na lista da conta, mas não revela a seleção de repositórios, as permissões efetivas, o plano, nem se o serviço executa no Finance AI.
 
-No HEAD `d6d309933d59709e9be747e5dff256131af2ec75`, a API do GitHub retornou os workflows `CI` e `CodeQL Actions`. O CI #4 (run `39773788629`) passou no Markdown lint; o check de aplicação passou como scaffold pendente, mas pulou npm, lint, typecheck, testes e build porque não existe `package.json`. CodeQL Actions #4 (run `39773788823`) passou. Isso comprova GitHub Actions/CodeQL no repositório; não comprova a execução dos demais apps.
+Na verificação atual da PR #1, o HEAD auditado foi `0353fa98e059d642ae3dbf2e27ed1b05f8aaa76b`. CI #7 (run `39777577605`) passou no Markdown lint e no gate de scaffold; a configuração de Node e os comandos npm de lint, typecheck, testes e build foram pulados porque ainda não existe `package.json`. CodeQL Actions #7 (run `39777577719`) passou. Dependency Review não foi acionado porque não houve alteração de manifesto/lockfile. Isso comprova somente GitHub Actions/CodeQL no Finance AI; não comprova execução dos demais apps.
 
 ## Solicitações de permissões
 
