@@ -28,7 +28,7 @@ Jobs independentes rodam em paralelo, cancelam execuções antigas da mesma PR e
 - Dependabot agrupa minor/patch para limitar volume; major continua revisão separada.
 - Tornar o repositório privado pode mudar os limites gratuitos de runners/armazenamento; reavaliar antes da mudança.
 - Nenhum workflow publica, faz deploy ou altera dados Supabase.
-- `main` foi verificada sem proteção de branch. A integração GitHub conectada não tem permissão administrativa para configurar required checks; antes de confiar no gate, exigir checks, bloquear force-push/deleção e exigir PR nas configurações do repositório.
+- Em auditoria anterior, `main` estava sem proteção; em 22/10/2026 o ruleset #25657724 foi ativado e passou a exigir PR, aprovação, cinco checks, squash, branch atualizada e bloqueio de force-push/deleção. A conexão GitHub verifica essa regra, mas não permite editá-la.
 
 ## Ferramentas e uso nesta fase
 
@@ -61,4 +61,4 @@ Jobs independentes rodam em paralelo, cancelam execuções antigas da mesma PR e
 - `CodeQL Actions` e `Analyze JavaScript and TypeScript` continuam condicionais ao tipo de alteração; não devem ser adicionados à lista universal de required checks enquanto não houver presença garantida em toda PR. Continuam gates obrigatórios da auditoria quando executados.
 - O detector falha de forma segura se não conseguir comparar o HEAD com a base da PR. Comparação é feita com histórico completo e `git diff --name-only`, sem executar código da PR no contexto privilegiado.
 - Ao configurar um ruleset: exigir PR, branches atualizadas, bloquear force-push e deleção, exigir os cinco checks estáveis, restringir bypass e definir revisão apropriada. Revalidar numa PR apenas documental e numa PR que altere migrações.
-- A conexão atual não possui operação administrativa para aplicar estas regras; a ausência de proteção é bloqueio, não configuração suposta.
+- Ruleset ativo [Finance AI - Main Protection](https://github.com/KayzenRoot/finance-ai/rules/25657724), confirmado por leitura da API GitHub. Exige 1 aprovação independente, resolução de conversas e os cinco checks estáveis. A conexão atual não possui operação administrativa para **editar** regras. `dismiss_stale_reviews_on_push=false` deve ser alterado pelo administrador para `true`. Confirmação de secret scanning e push protection ainda pendente.
