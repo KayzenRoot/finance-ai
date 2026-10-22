@@ -1,5 +1,5 @@
 begin;
-select plan(19);
+select plan(20);
 
 select has_table('finance_private', 'authorized_owners', 'private single-owner registry exists');
 
@@ -121,6 +121,19 @@ select is(
   (select count(*)::integer from removed),
   0,
   'another user cannot delete the first owner space'
+);
+
+-- Revoking the owner must remove access to previously created spaces
+-- without deleting the financial records themselves.
+reset role;
+delete from finance_private.authorized_owners
+  where owner_id = '10000000-0000-4000-8000-000000000001';
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000001', true);
+select is(
+  (select count(*)::integer from public.finance_spaces),
+  0,
+  'revocation immediately hides previously owned spaces'
 );
 
 select * from finish();
