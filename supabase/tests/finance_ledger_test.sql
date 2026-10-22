@@ -49,13 +49,13 @@ select throws_ok($$update public.finance_categories set kind='expense' where id=
 select is(public.finance_record_entry('81000000-0000-4000-8000-000000000081',
  '91000000-0000-4000-8000-000000000091','income',3000,current_date,'Synthetic income') is not null,true,'record exact income via RPC');
 
-select set_config('m02_income',(select id::text from public.finance_ledger_entries
+select set_config('finance_ai.m02_income',(select id::text from public.finance_ledger_entries
  where description='Synthetic income' and entry_role='original'),true);
 
 select is(public.finance_record_entry('82000000-0000-4000-8000-000000000082',
  '92000000-0000-4000-8000-000000000092','expense',500,current_date,'Synthetic expense') is not null,true,'record exact expense via RPC');
 
-select set_config('m02_expense',(select id::text from public.finance_ledger_entries
+select set_config('finance_ai.m02_expense',(select id::text from public.finance_ledger_entries
  where description='Synthetic expense' and entry_role='original'),true);
 
 select is((select current_balance_cents::numeric from public.finance_account_balances
@@ -92,15 +92,15 @@ select public.finance_record_transfer(
 
 select is((select sum(current_balance_cents::numeric) from public.finance_account_balances),17500::numeric,'internal transfer never double counts consolidated actuals');
 
-select is(public.finance_cancel_entry(current_setting('m02_income')::uuid) is not null,true,
+select is(public.finance_cancel_entry(current_setting('finance_ai.m02_income')::uuid) is not null,true,
  'cancellation creates audit reversal');
 
 select is((select current_balance_cents::numeric from public.finance_account_balances where account_id='81000000-0000-4000-8000-000000000081'),8000::numeric,'cancellation offsets income without rewriting history');
 
-select throws_ok($$select public.finance_cancel_entry(current_setting('m02_income')::uuid)$$,
+select throws_ok($$select public.finance_cancel_entry(current_setting('finance_ai.m02_income')::uuid)$$,
  '22023','Entry unavailable or already reversed','double cancellation is denied');
 
-select is(public.finance_correct_entry(current_setting('m02_expense')::uuid,
+select is(public.finance_correct_entry(current_setting('finance_ai.m02_expense')::uuid,
  '92000000-0000-4000-8000-000000000092',700,current_date,'Adjusted synthetic expense') is not null,true,
  'correction creates replacement atomically');
 
@@ -108,7 +108,7 @@ select is((select count(*)::integer from public.finance_ledger_entries),5,'origi
 
 select is((select sum(current_balance_cents::numeric) from public.finance_account_balances),14300::numeric,'corrected consolidated exact amount');
 
-select throws_ok($$select public.finance_correct_entry(current_setting('m02_expense')::uuid,
+select throws_ok($$select public.finance_correct_entry(current_setting('finance_ai.m02_expense')::uuid,
  '92000000-0000-4000-8000-000000000092',800,current_date,'Duplicate correction')$$,
  '22023','Entry unavailable or already reversed','second correction of reversed original rejected');
 
@@ -125,7 +125,7 @@ select is((select count(*)::integer from public.finance_ledger_entries),0,'other
 
 select is((select count(*)::integer from public.finance_ledger_legs),0,'invoker ledger legs respect owner');
 
-select throws_ok($$select public.finance_cancel_entry(current_setting('m02_income')::uuid)$$,
+select throws_ok($$select public.finance_cancel_entry(current_setting('finance_ai.m02_income')::uuid)$$,
  '42501','Not an authorized finance owner','other wallet cannot cancel original entry');
 
 reset role;
