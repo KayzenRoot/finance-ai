@@ -1,6 +1,12 @@
 # Checkpoint
 
-Status: FAI-PLAN-001 integrado à main. Política vigente (22/10/2026): zero aprovações humanas obrigatórias; CI/segurança continuam exigidos. FAI-WO-M00-001 na PR #16, com Audit Delta 01 para bloquear carteiras autenticadas não autorizadas diretamente no RLS. O HEAD auditado `b8ea1ce006020b0d4d325277bc0f15ea6ca87ff4` passou todos os dez checks, incluindo os cinco obrigatórios e Supabase/pgTAP (21 testes), RPC de autorização, carteira Web3 sintética e restauração sintética. Commits subsequentes requerem revalidação do novo HEAD. Esta é uma proposta de Checkpoint Delta; M00 não foi APPROVED/merged e M01–M11 seguem bloqueados.
+## Estado canônico atual — 22/10/2026
+
+- **M00 integrado** via PR #16, squash SHA `04797f1d058b5a37586383b60a5a3e6dc4037926`, após 10/10 checks SUCCESS. Issue #2 fechada.
+- **Ruleset** #25657724: `main` protegida, `required_approving_review_count=0`, cinco checks exigidos, squash, histórico linear, branch up-to-date, sem force push, deleção ou bypass.
+- **M01**: Issue #3, PR #17 e branch `feature/fai-m01-spaces-accounts-transfers`. Implementados espaços/contas/transferências internas, painel SSR, aritmética exata, RLS e views `security_invoker`. Código testado no HEAD `176a48227ae2d14895ee93f27a5334d313b064d2`: CI, Dependency Review, CodeQL JS/TS e Supabase SUCCESS; aguardando verificação do HEAD documental final.
+- **Evidência de banco**: run [39831779921](https://github.com/KayzenRoot/finance-ai/actions/runs/39831779921), migração/RLS/Web3 e restauração sintéticas SUCCESS. Testes M00/M01 verificados; sem projeto privado de produção, pagamentos ou dados reais.
+- **Produção separada**: secret scanning/push protection ainda precisam de confirmação administrativa, bem como backup independente, implantação e testes de carteira real. O histórico abaixo inclui bloqueios anteriores já resolvidos; o estado acima prevalece.
 
 ## Baseline
 
@@ -8,7 +14,7 @@ Status: FAI-PLAN-001 integrado à main. Política vigente (22/10/2026): zero apr
 - Branch principal: main.
 - Baseline inicial: 7f6997f8e5797e43f2cc8c1b282998112cb09265.
 - Branch de planejamento: planning/FAI-PLAN-001-source-pack.
-- HEAD integrado na `main`: `08f3cc45f64e889f00900cadfb409910607875ef`.
+- HEAD integrado na `main`: `04797f1d058b5a37586383b60a5a3e6dc4037926`.
 - Branch local de implementação: `feature/fai-m00-secure-foundation`.
 - Código de produto: scaffold Next.js 16/Supabase SSR na PR #16, incluindo correção de titular único. Consulte o HEAD atual da PR para evitar referência obsoleta.
 - Projeto Supabase hospedado para Finance AI: ainda não criado.

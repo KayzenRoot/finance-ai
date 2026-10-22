@@ -1,6 +1,6 @@
 # Modelo de domínio inicial
 
-Status: proposta atualizada pela PR FAI-PLAN-001.
+Status: modelo V1; M00 integrado e M01 em PR #17, sem deploy.
 
 ## Entidades
 
@@ -33,3 +33,7 @@ Status: proposta atualizada pela PR FAI-PLAN-001.
 ## Projeções
 
 Projeção = saldo confirmado + entradas e saídas previstas no horizonte. Cada item mantém data, estado e confiança. Cripto não aumenta o saldo disponível para pagamentos. Cenários conservador e estimado permanecem visivelmente distintos.
+
+## Estado da implementação M01
+
+A PR #17 cria contas `finance_accounts` com chave estrangeira composta `(space_id, owner_id)`, tipos banco/caixa/cartão, BRL exato em centavos e data de referência. `finance_transfers` é trilha interna imutável, com RPC autenticada e dois legs derivados que somam zero no consolidado. Views `security_invoker` preservam RLS. Saldos históricos incluem contas arquivadas para manter o efeito dos dois lados de transferências anteriores; isso não representa caixa disponível ou extrato bancário real. Consulte [contratos M01](contracts-m01.md).

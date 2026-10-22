@@ -4,7 +4,7 @@ Assistente financeiro privado para organizar finanças pessoais e da loja, proje
 
 ## Estado
 
-Planejamento e CI inicial integrados à `main` pela PR #1. A fundação do produto está sendo preparada na issue [FAI-M00 #2](https://github.com/KayzenRoot/finance-ai/issues/2); ainda não há banco de produção, dados financeiros ou deploy. O repositório é público: dados financeiros, endereços de carteira associados ao titular, credenciais, segredos e identificadores pessoais não podem entrar em commits, issues, exemplos, fixtures ou logs.
+Planejamento e fundação M00 integrados à `main` pelas PRs #1 e [#16](https://github.com/KayzenRoot/finance-ai/pull/16). O M01 está em desenvolvimento na [PR #17](https://github.com/KayzenRoot/finance-ai/pull/17), issue #3; ainda não há banco de produção, dados financeiros ou deploy. O repositório é público: dados financeiros, endereços de carteira associados ao titular, credenciais, segredos e identificadores pessoais não podem entrar em commits, issues, exemplos, fixtures ou logs.
 
 ## Direção da V1
 
@@ -37,6 +37,7 @@ Planejamento e CI inicial integrados à `main` pela PR #1. A fundação do produ
 - [Segurança e privacidade](docs/security.md)
 - [Threat Model inicial do M00](docs/threat-model-m00.md)
 - [Contratos compartilhados do M00](docs/contracts-m00.md)
+- [Contratos e limites do M01](docs/contracts-m01.md)
 - [CI e verificações](docs/ci.md)
 - [Plano de testes](docs/test-plan.md)
 - [Implantação e operação](docs/deployment.md)
@@ -48,7 +49,7 @@ Planejamento e CI inicial integrados à `main` pela PR #1. A fundação do produ
 
 ## Fluxo de trabalho
 
-Cada módulo tem Work Order e issue GitHub com dependências, critérios de aceite, testes, entregáveis e stop condition. PRs devem ser pequenas e vinculadas às issues. Trabalho paralelo começa após contratos compartilhados estarem aprovados.
+Cada módulo tem Work Order e issue GitHub, critérios de aceite, testes, evidências e stop condition. PRs seguem o ruleset: **zero aprovações humanas obrigatórias**, cinco required checks, squash sem bypass; sem deploy automático. Trabalho paralelo começa após contratos compartilhados estarem aprovados.
 
 ## Segurança
 
