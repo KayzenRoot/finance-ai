@@ -53,3 +53,10 @@ FAI-M00: auditar a [PR #16](https://github.com/KayzenRoot/finance-ai/pull/16) no
 - Bloqueios administrativos comprovados: `main.protected=false`, rulesets vazios, checks não exigidos; revisão Copilot não substantiva (quota). `kayzenweb3` tem permissão `read`, insuficiente como comprovante de aprovação independente com requisito de write.
 - Pendências: revisar o HEAD final, confirmar configurações de secret scanning/push protection e required checks, obter revisão independente elegível e auditar tests/diff. Projeto hospedado, dados reais e deploy continuam proibidos.
 - **Veredito nesta branch:** BLOCKED para merge e M01, mesmo com CI verde; manter PR e issue abertas. Não promover o checkpoint até auditoria final e aprovação.
+
+### Audit Delta 02 — checks exigíveis sem deadlock (proposto)
+
+- A PR #16 foi corrigida para executar sempre o detector `Detect Supabase scope` e o job `Dependency Review`; o job pesado `Migration, RLS and synthetic wallet checks` usa `needs` e `if` conforme alterações relevantes. A implementação aguarda validação dos workflows no HEAD definitivo.
+- Antes dessa correção, os workflows usavam `paths` no gatilho; torná-los globalmente obrigatórios faria PRs documentais aguardarem checks ausentes. Os critérios e nomes de required checks estão em [ci.md](ci.md).
+- Os dois workflows CodeQL continuam condicionais, portanto NÃO são elegíveis como checks universais neste desenho; usar seus resultados como gate de auditoria nos PRs em que são acionados.
+- Ainda é necessário configurar branch rules por administrador e verificar secret scanning/push protection. Nenhuma mudança foi aplicada à `main`.
