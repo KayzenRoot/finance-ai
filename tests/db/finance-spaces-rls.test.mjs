@@ -30,6 +30,13 @@ test("finance spaces migration enforces owner-only database access", async () =>
     `);
 
     await db.exec("begin; set local role authenticated; select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000001', true);");
+    await expectRlsRejection(`insert into public.finance_spaces (owner_id, space_type, display_name)
+      values ('10000000-0000-4000-8000-000000000001', 'personal', 'Denied before provision')`);
+    await db.exec(`reset role;
+      insert into finance_private.authorized_owners (owner_id)
+      values ('10000000-0000-4000-8000-000000000001');
+      set local role authenticated;
+      select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000001', true);`);
     const ownInsert = await db.query(`
       insert into public.finance_spaces (owner_id, space_type, display_name)
       values ('10000000-0000-4000-8000-000000000001', 'personal', 'Pessoal')
@@ -57,6 +64,8 @@ test("finance spaces migration enforces owner-only database access", async () =>
     await db.exec("commit;");
 
     await db.exec("begin; set local role authenticated; select set_config('request.jwt.claim.sub', '20000000-0000-4000-8000-000000000002', true);");
+    await expectRlsRejection(`insert into public.finance_spaces (owner_id, space_type, display_name)
+      values ('20000000-0000-4000-8000-000000000002', 'personal', 'Unauthorized owner')`);
     const crossRead = await db.query("select id from public.finance_spaces;");
     assert.deepEqual(crossRead.rows, []);
     const crossUpdate = await db.query(`update public.finance_spaces set display_name = 'alterado'
