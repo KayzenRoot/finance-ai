@@ -63,22 +63,29 @@ async function DashboardContent({ searchParams }: { searchParams: Promise<Params
     </div>;
   }
 
-  const [{ data: spacesRaw, error: spacesError }, { data: balancesRaw, error: balancesError }, { data: transfersRaw, error: transfersError }] = await Promise.all([
-    supabase.from("finance_spaces").select("id,owner_id,space_type,display_name").eq("owner_id", data.user.id).order("space_type"),
-    supabase.from("finance_account_balances").select("account_id,owner_id,space_id,account_type,name,opening_balance_date,opening_balance_cents,current_balance_cents,archived_at").eq("owner_id", data.user.id),
-    supabase.from("finance_transfers").select("id,from_account_id,to_account_id,amount_cents,effective_date").eq("owner_id", data.user.id).order("effective_date", { ascending: false }).limit(10),
-  ]);
-  if (spacesError || balancesError || transfersError) {
-    return <div className="dashboard-card"><h1>Não foi possível carregar as contas.</h1><p>Confirme que a migração do M01 foi aplicada ao banco privado autorizado.</p></div>;
-  }
-
-  const spaces = (spacesRaw ?? []) as Space[];
-  const accounts = (balancesRaw ?? []) as Balance[];
-  const transfers = (transfersRaw ?? []) as Transfer[];
   const params = await searchParams;
   const selectedType = params.space === "store" ? "store" : "personal";
+  const { data: spacesRaw, error: spacesError } = await supabase.from("finance_spaces")
+    .select("id,owner_id,space_type,display_name").eq("owner_id", data.user.id).order("space_type");
+  if (spacesError) {
+    return <div className="dashboard-card"><h1>Não foi possível carregar os espaços.</h1><p>Confirme a migração e sua autorização privada.</p></div>;
+  }
+  const spaces = (spacesRaw ?? []) as Space[];
   const selected = spaces.find(space => space.space_type === selectedType);
-  const visibleAccounts = accounts.filter(account => account.space_id === selected?.id);
+  const balanceColumns = "account_id,owner_id,space_id,account_type,name,opening_balance_date,opening_balance_cents,current_balance_cents,archived_at";
+  const [{ data: balancesRaw, error: balancesError }, { data: scopedRaw, error: scopedError }, { data: transfersRaw, error: transfersError }] = await Promise.all([
+    supabase.from("finance_account_balances").select(balanceColumns).eq("owner_id", data.user.id),
+    supabase.from("finance_account_balances").select(balanceColumns)
+      .eq("owner_id", data.user.id).eq("space_id", selected?.id ?? "00000000-0000-0000-0000-000000000000"),
+    supabase.from("finance_transfers").select("id,from_account_id,to_account_id,amount_cents,effective_date")
+      .eq("owner_id", data.user.id).order("effective_date", { ascending: false }).limit(10),
+  ]);
+  if (balancesError || scopedError || transfersError) {
+    return <div className="dashboard-card"><h1>Não foi possível carregar as contas.</h1><p>Confirme que a migração do M01 foi aplicada ao banco privado autorizado.</p></div>;
+  }
+  const accounts = (balancesRaw ?? []) as Balance[];
+  const visibleAccounts = (scopedRaw ?? []) as Balance[];
+  const transfers = (transfersRaw ?? []) as Transfer[];
   const activeAccounts = accounts.filter(account => !account.archived_at);
   const shownAccounts = visibleAccounts.filter(account => !account.archived_at);
   const selectedTotal = sumCents(shownAccounts);
