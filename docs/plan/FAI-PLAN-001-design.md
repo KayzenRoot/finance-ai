@@ -8,7 +8,7 @@ Definir a V1 do Finance AI, estabelecer o Source Pack canônico, organizar módu
 
 ## CONTEXT
 
-O repositório estava vazio. O titular quer um assistente para finanças pessoais e da loja, com contas, receitas, despesas, dívidas e auxílio para decidir prioridades em situação de caixa apertado e renda variável. A V1 foi aprovada conceitualmente como experiência para um único titular, dois espaços financeiros, entrada manual/CSV, recomendações explicáveis e nenhuma execução de pagamento.
+O repositório estava vazio. O produto organiza finanças pessoais e da loja, contas, receitas, despesas, dívidas e prioridades em cenários de caixa apertado e renda variável. A V1 foi aprovada conceitualmente como experiência para um único titular, dois espaços financeiros, entrada manual/CSV, recomendações explicáveis e nenhuma execução de pagamento.
 
 ## SCOPE
 

@@ -8,7 +8,7 @@ Ajudar o titular a compreender e organizar o caixa pessoal e o da loja em espaç
 
 ## Problema
 
-O titular relata dificuldade para acompanhar contas, vencimentos e renda variável, com despesas superiores ao que recebe. O sistema deve reduzir esquecimentos e tornar explícito o que é conhecido, estimado ou ainda precisa ser informado. Ele não deve prometer que conseguirá eliminar uma insuficiência quando os recursos forem menores que os compromissos.
+O produto atende pessoas que precisam acompanhar contas, vencimentos e renda variável, inclusive quando os compromissos projetados superam os recursos disponíveis. Deve reduzir esquecimentos e tornar explícito o que é conhecido, estimado ou ainda precisa ser informado. Não deve prometer que eliminará uma insuficiência quando os recursos forem menores que os compromissos.
 
 ## Usuário e cenário da V1
 
