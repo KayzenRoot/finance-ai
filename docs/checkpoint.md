@@ -1,6 +1,6 @@
 # Checkpoint
 
-Status: Source Pack FAI-PLAN-001 integrado na `main` pela PR #1. O titular autorizou a continuação para FAI-M00; a implementação está sendo preparada como PR separada vinculada à issue #2. Não mesclar esta Work Order.
+Status: Source Pack FAI-PLAN-001 integrado na `main` pela PR #1. FAI-M00 está publicado na PR #16, ligada à issue #2, aguardando os checks remotos. Não mesclar esta Work Order.
 
 ## Baseline
 
@@ -10,9 +10,9 @@ Status: Source Pack FAI-PLAN-001 integrado na `main` pela PR #1. O titular autor
 - Branch de planejamento: planning/FAI-PLAN-001-source-pack.
 - HEAD integrado na `main`: `08f3cc45f64e889f00900cadfb409910607875ef`.
 - Branch local de implementação: `feature/fai-m00-secure-foundation`.
-- Código de produto: scaffold Next.js 16/Supabase SSR em preparação; PR e SHA ainda serão registrados neste checkpoint.
+- Código de produto: scaffold Next.js 16/Supabase SSR na PR #16; HEAD `399e462762d1ddb3e4e6871fea4ec156e427a53c`.
 - Projeto Supabase hospedado para Finance AI: ainda não criado.
-- CI de aplicação: `package.json` e `package-lock.json` adicionados no branch; testes locais em execução antes da PR.
+- CI de aplicação: workflows de app e Supabase adicionados. Lint, typecheck, teste PGlite/RLS, `npm audit --audit-level=high` e build passaram localmente; workflow com Docker, pgTAP, Web3 e restauração sintética aguarda execução na PR.
 - Open Finance: avaliação documental; nenhuma integração.
 - Dados reais: proibidos no repositório público.
 
@@ -28,6 +28,7 @@ Status: Source Pack FAI-PLAN-001 integrado na `main` pela PR #1. O titular autor
 - Socket Security também tem run comprovado. Isso ainda não comprova SonarQube, Codecov, CircleCI, Cirrus CI ou outros apps.
 - `main` está desprotegida (`protected:false`). A integração GitHub conectada não tem permissão administrativa para mudar regras/required checks.
 - A PR #1 foi mesclada; nenhuma aplicação foi implantada e nenhum projeto Supabase de produção foi criado.
+- A PR #16 está aberta, sem merge. O teste de container Supabase não pôde ser executado localmente porque Docker não está disponível neste ambiente.
 
 ## Direção adicionada
 
@@ -40,4 +41,4 @@ Status: Source Pack FAI-PLAN-001 integrado na `main` pela PR #1. O titular autor
 
 ## Próximo gate
 
-FAI-M00: executar CI completo da PR, validar migração/RLS, login com carteiras sintéticas, export/restore sintético, registrar evidências e conferir a política de segurança do repositório. A fundação não recebe dados reais até o titular revisar a PR, configurar proteção de `main` e haver backup independente hospedado com restauração ensaiada. M01–M11 seguem bloqueados até revisão dos contratos compartilhados.
+FAI-M00: concluir checks remotos da [PR #16](https://github.com/KayzenRoot/finance-ai/pull/16), validar migração/RLS, login com carteiras sintéticas, export/restore sintético e registrar evidências. A fundação não recebe dados reais até a revisão da PR, proteção de `main` e backup independente hospedado com restauração ensaiada. M01–M11 seguem bloqueados até revisão dos contratos compartilhados.
