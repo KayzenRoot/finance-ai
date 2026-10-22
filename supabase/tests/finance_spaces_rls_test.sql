@@ -1,5 +1,7 @@
 begin;
-select plan(16);
+select plan(19);
+
+select has_table('finance_private', 'authorized_owners', 'private single-owner registry exists');
 
 select has_table('public', 'finance_spaces', 'finance_spaces is present');
 select ok(
@@ -46,6 +48,18 @@ values
 
 set local role authenticated;
 select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000001', true);
+select throws_ok(
+  $$insert into public.finance_spaces (owner_id, space_type, display_name)
+    values ('10000000-0000-4000-8000-000000000001', 'personal', 'Pessoal')$$,
+  '42501',
+  'new row violates row-level security policy for table "finance_spaces"',
+  'wallet cannot insert before explicit owner provisioning'
+);
+reset role;
+insert into finance_private.authorized_owners (owner_id)
+values ('10000000-0000-4000-8000-000000000001');
+set local role authenticated;
+select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000001', true);
 select lives_ok(
   $$insert into public.finance_spaces (owner_id, space_type, display_name)
     values ('10000000-0000-4000-8000-000000000001', 'personal', 'Pessoal')$$,
@@ -79,6 +93,13 @@ select is(
   (select count(*)::integer from public.finance_spaces),
   0,
   'another user cannot read the first owner space'
+);
+select throws_ok(
+  $$insert into public.finance_spaces (owner_id, space_type, display_name)
+    values ('20000000-0000-4000-8000-000000000002', 'personal', 'Unauthorized wallet')$$,
+  '42501',
+  'new row violates row-level security policy for table "finance_spaces"',
+  'another authenticated wallet cannot create even its own space'
 );
 with changed as (
   update public.finance_spaces
