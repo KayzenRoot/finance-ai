@@ -16,10 +16,10 @@ Status: Source Pack, issues atualizadas e workflows iniciais propostos na PR FAI
 
 ## Evidência
 
-- PR de planejamento: https://github.com/KayzenRoot/finance-ai/pull/1 (draft).
+- PR de planejamento: [#1](https://github.com/KayzenRoot/finance-ai/pull/1), ainda draft.
 - Issues FAI-M00 a FAI-M11: #2–#13.
 - Pipeline planejado/arquivado em docs/ci.md e .github/workflows/.
-- Workflow efetivo e SHA serão registrados após a execução do GitHub Actions na PR.
+- O primeiro CI identificou duas condições de qualidade: corrigir estilo de tabela Markdown e verificar se Dependency Graph está habilitado antes de ativar Dependency Review para manifests.
 - Nenhum merge ou deploy realizado.
 
 ## Direção adicionada
@@ -31,4 +31,4 @@ Status: Source Pack, issues atualizadas e workflows iniciais propostos na PR FAI
 
 ## Próximo gate
 
-Aguardar resultado do CI e revisar o Source Pack/issues. Depois, fechar ADRs e autenticação em M00 e executar módulos conforme dependências. Revisar limites Supabase Free e estratégia de backup independente antes de dados reais. Atualizar o SHA do checkpoint após a verificação da PR.
+Aguardar a nova execução do CI e revisar o Source Pack/issues. Depois, fechar ADRs e autenticação em M00 e executar módulos conforme dependências. Revisar limites Supabase Free e estratégia de backup independente antes de dados reais. Atualizar a evidência SHA após a verificação da PR.

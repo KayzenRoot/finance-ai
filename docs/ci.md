@@ -7,8 +7,8 @@ Status: configuração inicial na PR FAI-PLAN-001. O app ainda não tem scaffold
 | Job | Ação | Custo/velocidade |
 |---|---|---|
 | Markdown | Lint de README e docs | Rápido, sem build de produto |
-| Aplicação | Node 24, cache npm, npm ci, lint, typecheck, test:ci, build | Pula somente até existir package.json; sem matriz |
-| Dependency Review | Bloqueia nova dependência vulnerável HIGH/CRITICAL | Só em pull request |
+| Aplicação | Node 24, cache npm, npm ci/audit, lint, typecheck, test:ci e build | Pula somente até existir package.json; sem matriz |
+| Dependency Review | Bloqueia nova dependência vulnerável HIGH/CRITICAL | Roda só em PR que altera manifest/lockfile |
 | CodeQL Actions | SAST dos workflows | Só quando workflows mudarem |
 | CodeQL JS/TS | SAST de código TypeScript/JavaScript | Só quando código/manifests JS/TS mudarem |
 | Dependabot | Atualizações agrupadas de Actions e npm | Semanal, PRs pequenos |
@@ -22,6 +22,8 @@ Jobs independentes rodam em paralelo, cancelam execuções antigas da mesma PR e
 - Eventos de PR usam pull_request; não usar pull_request_target para executar código não confiável.
 - CI não recebe secrets de produção e usa apenas fixtures sintéticas.
 - O check de aplicação exige lockfile e scripts lint, typecheck, test:ci e build quando package.json passar a existir.
+- npm audit bloqueia vulnerabilidades HIGH/CRITICAL na árvore instalada.
+- Dependency Review fica em workflow com filtro por manifest/lockfile para não gastar runner em PRs de documentação. Requer Dependency Graph habilitado nas configurações antes do scaffold.
 - Dependabot agrupa minor/patch para limitar volume; major continua revisão separada.
 - SonarQube Cloud será adicionado somente se a auditoria confirmar app instalada, repositório vinculado, plano OSS e check útil sem duplicar CodeQL.
 - Tornar o repositório privado pode alterar os limites gratuitos de runners/armazenamento; reavaliar antes da mudança.
