@@ -8,7 +8,7 @@ Status: Source Pack, issues, pipeline e auditoria visual dos GitHub Apps em revi
 - Branch principal: main.
 - Baseline inicial: 7f6997f8e5797e43f2cc8c1b282998112cb09265.
 - Branch de trabalho: planning/FAI-PLAN-001-source-pack.
-- HEAD do delta de auditoria verificado antes desta atualização do checkpoint: b72d53ac289a313d61e432d79cc2f4855f9f2908.
+- HEAD de referência verificado para esta atualização: 0353fa98e059d642ae3dbf2e27ed1b05f8aaa76b.
 - Código de produto: ainda inexistente.
 - Banco Finance AI: nenhum projeto selecionado ou criado.
 - CI de aplicação: scaffold ainda não existe; lint/test/typecheck/build do produto aguardam package.json e lockfile.
@@ -19,11 +19,11 @@ Status: Source Pack, issues, pipeline e auditoria visual dos GitHub Apps em revi
 
 - PR de planejamento: [#1](https://github.com/KayzenRoot/finance-ai/pull/1), ainda draft.
 - Issues FAI-M00 a FAI-M11: #2–#13.
-- CI #6 `39777420129` passou no Markdown lint e no gate de scaffold. Os comandos de aplicação foram pulados porque não existe package.json.
-- CodeQL Actions #6 `39777420182` passou no HEAD de auditoria `b72d53ac289a313d61e432d79cc2f4855f9f2908`.
+- CI #7 `39777577605`, no HEAD de referência acima, passou no Markdown lint e no gate de scaffold. Os comandos npm de lint, typecheck, testes e build foram pulados porque não existe package.json.
+- CodeQL Actions #7 `39777577719` passou no HEAD de referência `0353fa98e059d642ae3dbf2e27ed1b05f8aaa76b`.
 - Dependency Review não executou porque não há manifesto/lockfile. Confirmar Dependency Graph em M00 antes do scaffold.
 - As capturas mostram 25 GitHub Apps na conta; quatro mostram pedidos de novas permissões. Veja [auditoria dos apps](github-app-audit.md). Configuração, escopo de repositório e execução fora de GitHub Actions permanecem não comprovados.
-- No HEAD auditado, somente CI e CodeQL Actions têm runs comprovados. Isso não comprova SonarQube, Codecov, CircleCI, Cirrus ou outros apps.
+- Nesse HEAD de referência, somente CI e CodeQL Actions têm runs comprovados no Finance AI. Isso não comprova SonarQube, Codecov, CircleCI, Cirrus ou outros apps.
 - Nenhum merge ou deploy realizado.
 
 ## Direção adicionada
