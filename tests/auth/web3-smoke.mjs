@@ -59,6 +59,17 @@ function provisionSyntheticOwner(userId) {
   ], { stdio: "pipe" });
 }
 
+function revokeSyntheticOwner(userId) {
+  const container = process.env.SUPABASE_DB_CONTAINER;
+  assert.match(container ?? "", /^supabase_db_[a-zA-Z0-9_-]+$/);
+  assert.match(userId, /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+  execFileSync("docker", [
+    "exec", container, "psql", "-U", "postgres", "-d", "postgres",
+    "-v", "ON_ERROR_STOP=1", "-c",
+    `delete from finance_private.authorized_owners where owner_id = '${userId}'`,
+  ], { stdio: "pipe" });
+}
+
 const first = await authenticateSyntheticWallet();
 const second = await authenticateSyntheticWallet();
 assert.notEqual(first.userId, second.userId);
@@ -135,6 +146,17 @@ const { data: stillOwned, error: ownerReadError } = await first.client
   .eq("id", firstSpace.id);
 assert.equal(ownerReadError, null);
 assert.equal(stillOwned?.length, 1);
+
+revokeSyntheticOwner(first.userId);
+const { data: afterRevocation, error: afterRevocationError } = await first.client.rpc("finance_is_authorized_owner");
+assert.equal(afterRevocationError, null);
+assert.equal(afterRevocation, false);
+const { data: revokedRows, error: revokedReadError } = await first.client
+  .from("finance_spaces")
+  .select("id")
+  .eq("id", firstSpace.id);
+assert.equal(revokedReadError, null);
+assert.deepEqual(revokedRows, []);
 
 await first.client.auth.signOut();
 await second.client.auth.signOut();
