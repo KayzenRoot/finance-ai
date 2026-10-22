@@ -8,7 +8,7 @@ Saldos, transações, credores, renda, endereços de carteira associados ao titu
 
 ## Controles obrigatórios
 
-- Sessão Supabase SSR com renovação via `getClaims()`; dashboard exige a allowlist `FINANCE_AI_OWNER_USER_ID` no servidor.
+- Sessão Supabase SSR com renovação via `getClaims()` no Proxy; dashboard revalida a sessão com `getUser()` e exige `FINANCE_AI_OWNER_USER_ID` e registro na allowlist privada no banco.
 - Supabase RLS habilitado em todas as tabelas expostas e políticas que autorizem titular e espaço no banco.
 - Testes contra IDOR/BOLA alterando IDs do cliente; não confiar somente em filtros da API ou UI.
 - Não usar user_metadata editável pelo usuário para autorização.
@@ -48,3 +48,5 @@ Antes de produção, definir revogação de credenciais, restauração, exclusã
 A política de `finance_spaces` exige **duas condições independentes**: `auth.uid() = owner_id` e presença do usuário autenticado na tabela `finance_private.authorized_owners`. A tabela privada aceita somente um registro, não está exposta pela Data API e só pode ser alterada por administração privilegiada. A função `public.finance_is_authorized_owner()` é `SECURITY DEFINER`, com `search_path` vazio, e retorna apenas autorização para a identidade de quem chama. Contas Web3 autenticadas, mas não provisionadas, não podem criar nem ler espaços, mesmo próprios.
 
 O servidor exige ainda `FINANCE_AI_OWNER_USER_ID` e usa `auth.getUser()` para validar sessão ativa. O identificador real do titular nunca deve ser incluído no repositório nem em logs públicos. Testes usam identidades sintéticas e verificam acesso negado antes do provisionamento e para outra carteira.
+
+O [modelo inicial de ameaças do M00](threat-model-m00.md) documenta ativos, fronteiras de confiança, riscos e gates pendentes. O [contrato M00](contracts-m00.md) registra as interfaces efetivamente implementadas e as lacunas que permanecem para módulos posteriores.
