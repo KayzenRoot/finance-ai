@@ -20,6 +20,11 @@ const msg:Record<string,string>={
  "snapshot-error":"Observação recusada pelo banco; confira espaço e informações.",
 };
 const money=(v:string|null)=>v===null?"Não informado":formatBrlCents(v);
+function editCents(value:string|null):string{
+ if(value===null)return "";
+ const n=BigInt(value),divisor=BigInt(100);
+ return (n/divisor).toString()+","+(n%divisor).toString().padStart(2,"0");
+}
 function rate(value:string|null,period:string|null,source:string|null){
  if(value===null)return "Não informado";
  const unit=period==="monthly"?"mês":period==="daily"?"dia":"ano";
@@ -86,26 +91,26 @@ async function DebtContent({searchParams}:{searchParams:Promise<Params>}){
       <small>Fonte: {d.source_reference??"Não informada"} · Observado em: {d.as_of_date??"Não informado"}</small>
       {d.has_missing_cost_data&&<p><strong>Informações incompletas.</strong> Sem custo total confiável calculado.</p>}
       <details><summary>Adicionar informação ou correção</summary>
-       <p>O histórico anterior é preservado. Deixe desconhecidos em branco.</p>
+       <p>Valores existentes vêm preenchidos para evitar apagar informações sem querer. Para registrar um campo como desconhecido, apague seu conteúdo. O histórico anterior é preservado.</p>
        <form action={recordDebtObservation} className="finance-form">
         {hidden}<input type="hidden" name="debt_id" value={d.id}/>
         <label>Documento ou origem<input name="source_reference" required maxLength={240}/></label>
         <label>Data da informação<input name="as_of_date" type="date" required/></label>
-        <label>Saldo (BRL)<input name="balance_brl" inputMode="decimal" placeholder="Desconhecido"/></label>
-        <label>Pagamento mínimo (BRL)<input name="minimum_brl" inputMode="decimal" placeholder="Desconhecido"/></label>
-        <label>Vencimento<input name="due_date" type="date"/></label>
-        <label>Juros (% ao período)<input name="interest_percent" inputMode="decimal"/></label>
-        <label>Unidade dos juros<select name="interest_period" defaultValue="">
+        <label>Saldo (BRL)<input name="balance_brl" inputMode="decimal" defaultValue={editCents(d.balance_cents)} placeholder="Desconhecido"/></label>
+        <label>Pagamento mínimo (BRL)<input name="minimum_brl" inputMode="decimal" defaultValue={editCents(d.minimum_due_cents)} placeholder="Desconhecido"/></label>
+        <label>Vencimento<input name="due_date" type="date" defaultValue={d.due_date??""}/></label>
+        <label>Juros (% ao período)<input name="interest_percent" inputMode="decimal" defaultValue={d.interest_percent??""}/></label>
+        <label>Unidade dos juros<select name="interest_period" defaultValue={d.interest_period??""}>
          <option value="">Desconhecida</option><option value="monthly">Mensal</option>
          <option value="annual">Anual</option><option value="daily">Diária</option></select></label>
-        <label>Fonte dos juros<input name="interest_source" maxLength={240}/></label>
-        <label>CET (% ao período)<input name="cet_percent" inputMode="decimal"/></label>
-        <label>Unidade do CET<select name="cet_period" defaultValue="">
+        <label>Fonte dos juros<input name="interest_source" maxLength={240} defaultValue={d.interest_source??""}/></label>
+        <label>CET (% ao período)<input name="cet_percent" inputMode="decimal" defaultValue={d.cet_percent??""}/></label>
+        <label>Unidade do CET<select name="cet_period" defaultValue={d.cet_period??""}>
          <option value="">Desconhecida</option><option value="annual">Anual</option>
          <option value="monthly">Mensal</option><option value="daily">Diária</option></select></label>
-        <label>Fonte do CET<input name="cet_source" maxLength={240}/></label>
-        <label>Multa fixa (BRL)<input name="penalty_brl" inputMode="decimal"/></label>
-        <label>Consequências conhecidas<textarea name="consequences" maxLength={1200}/></label>
+        <label>Fonte do CET<input name="cet_source" maxLength={240} defaultValue={d.cet_source??""}/></label>
+        <label>Multa fixa (BRL)<input name="penalty_brl" inputMode="decimal" defaultValue={editCents(d.penalty_fixed_cents)}/></label>
+        <label>Consequências conhecidas<textarea name="consequences" maxLength={1200} defaultValue={d.consequences??""}/></label>
         <button type="submit" className="button button-primary">Registrar novo snapshot</button>
        </form>
       </details>

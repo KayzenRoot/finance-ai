@@ -121,12 +121,14 @@ begin
     or (p_consequences is not null and char_length(p_consequences)>1200)
     or ((p_interest_percent is null) <> (p_interest_period is null))
     or ((p_interest_percent is null) <> (p_interest_source is null))
+    or (p_interest_percent is not null and p_interest_percent <> trunc(p_interest_percent,8))
     or (p_interest_percent is not null and
        (p_interest_percent not between 0 and 10000
         or p_interest_period not in ('daily','monthly','annual')
         or char_length(btrim(p_interest_source)) not between 1 and 240))
     or ((p_cet_percent is null) <> (p_cet_period is null))
     or ((p_cet_percent is null) <> (p_cet_source is null))
+    or (p_cet_percent is not null and p_cet_percent <> trunc(p_cet_percent,8))
     or (p_cet_percent is not null and
        (p_cet_percent not between 0 and 10000
         or p_cet_period not in ('daily','monthly','annual')

@@ -497,6 +497,18 @@ const {data:badRate,error:badRateError}=await first.client.rpc("finance_record_d
  p_interest_percent:"3.5",
 });
 assert.ok(badRateError,"unknown rate unit must be rejected");assert.equal(badRate,null);
+const {data:roundedInterest,error:roundedInterestError}=await first.client.rpc("finance_record_debt_observation",{
+ p_debt_id:debtId,p_source_reference:"Overprecise synthetic rate",p_as_of_date:"2026-02-02",
+ p_interest_percent:"2.123456789",p_interest_period:"monthly",p_interest_source:"Synthetic contract",
+});
+assert.ok(roundedInterestError,"overprecision must be rejected rather than rounded");
+assert.equal(roundedInterest,null);
+const {data:roundedCET,error:roundedCETError}=await first.client.rpc("finance_record_debt_observation",{
+ p_debt_id:debtId,p_source_reference:"Overprecise synthetic CET",p_as_of_date:"2026-02-02",
+ p_cet_percent:"31.123456789",p_cet_period:"annual",p_cet_source:"Synthetic contract",
+});
+assert.ok(roundedCETError,"overprecision CET must be rejected rather than rounded");
+assert.equal(roundedCET,null);
 const {data:oldDebtObservation,error:oldDebtError}=await first.client.rpc("finance_record_debt_observation",{
  p_debt_id:debtId,p_source_reference:"Older synthetic note",p_as_of_date:"2026-01-01",
  p_balance_cents:"999999",

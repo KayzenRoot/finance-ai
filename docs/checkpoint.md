@@ -154,3 +154,10 @@ A PR #19 (`feature/fai-m03-payables-receivables`) passou inicialmente com 129 pg
 
 - PR #19 de HEAD `a5b9bac7416b6f1aaa4a897c8e3ff278909c83a3` integrada com squash merge normal e sem bypass na main protegida `62d9fd54b0d850376bb4f7ee430e11075be2c54e`; issue #5 encerrada. Gates no HEAD M03: cinco required SUCCESS, 138/138 pgTAP e EVM Data API sintética, CodeQL JS/TS, SonarCloud e Socket Security SUCCESS.
 - M04: issue #6 / branch `feature/fai-m04-debt-register` criada a partir da main acima. Primeira implementação de dívidas/snapshots append-only, RLS, campos desconhecidos NULL, taxas com fonte e unidade explícitas, sem estimativas de custo. **IN PROGRESS; não comprovar testes que ainda não rodaram.** Sem merge M04, deploy, custos ou dados financeiros reais.
+
+### M04 — findings de auditoria e gate de revalidação (22/10/2026)
+
+- PR [#20](https://github.com/KayzenRoot/finance-ai/pull/20), branch `feature/fai-m04-debt-register`, main M03 `62d9fd54b0d850376bb4f7ee430e11075be2c54e` preservada.
+- HEAD de código anterior `69a96182b3d80e173da4f081c68e28c9ad010eff`: [Supabase 39854017534](https://github.com/KayzenRoot/finance-ai/actions/runs/39854017534) SUCCESS, `Files=5, Tests=176, Result: PASS`; smoke EVM Data API M00–M04, RLS, proveniência e revogação PASS; restore sintético PASS. CI 39854017456, Dependency Review 39854017437, CodeQL JS/TS 39854017739, SonarCloud e Socket Security SUCCESS, 5/5 required checks. Este bundle não substitui a revalidação do SHA que contém os findings novos.
+- Findings corrigidos: (1) edição de snapshot exibia campos vazios, podendo ocultar valores previamente conhecidos no painel mais recente; agora a interface pré-preenche dados existentes e torna explícita a limpeza intencional; (2) parâmetro de taxa com mais de oito casas podia sofrer arredondamento silencioso ao salvar em `numeric(14,8)`; agora RPC rejeita sobreprecisão de juros e CET. Dois pgTAP + testes REST negativos adicionados, **178 testes esperados**, ainda não declarados PASS no novo commit.
+- Não realizar merge, deploy, gastos, dados financeiros reais nem tornar READY sem nova rodada de checks e Evidence Bundle final.
