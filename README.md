@@ -35,6 +35,8 @@ Planejamento e CI inicial integrados à `main` pela PR #1. A fundação do produ
 - [Arquitetura](docs/architecture.md)
 - [Modelo de dados](docs/data-model.md)
 - [Segurança e privacidade](docs/security.md)
+- [Threat Model inicial do M00](docs/threat-model-m00.md)
+- [Contratos compartilhados do M00](docs/contracts-m00.md)
 - [CI e verificações](docs/ci.md)
 - [Plano de testes](docs/test-plan.md)
 - [Implantação e operação](docs/deployment.md)
