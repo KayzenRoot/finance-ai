@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import { createClient } from "@supabase/supabase-js";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 
@@ -47,9 +48,29 @@ async function authenticateSyntheticWallet() {
   return { client, userId: data.user.id };
 }
 
+function provisionSyntheticOwner(userId) {
+  const container = process.env.SUPABASE_DB_CONTAINER;
+  assert.match(container ?? "", /^supabase_db_[a-zA-Z0-9_-]+$/, "A local Supabase database container is required.");
+  assert.match(userId, /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+  execFileSync("docker", [
+    "exec", container, "psql", "-U", "postgres", "-d", "postgres",
+    "-v", "ON_ERROR_STOP=1", "-c",
+    `insert into finance_private.authorized_owners (owner_id) values ('${userId}')`,
+  ], { stdio: "pipe" });
+}
+
 const first = await authenticateSyntheticWallet();
 const second = await authenticateSyntheticWallet();
 assert.notEqual(first.userId, second.userId);
+
+const { data: unprovisionedSpace, error: unprovisionedInsertError } = await first.client
+  .from("finance_spaces")
+  .insert({ owner_id: first.userId, space_type: "personal", display_name: "Denied before provision" })
+  .select("id");
+assert.ok(unprovisionedInsertError);
+assert.equal(unprovisionedSpace, null);
+
+provisionSyntheticOwner(first.userId);
 
 const { data: firstSpace, error: firstInsertError } = await first.client
   .from("finance_spaces")
@@ -73,13 +94,12 @@ const { data: foreignInsert, error: foreignInsertError } = await second.client
 assert.ok(foreignInsertError);
 assert.equal(foreignInsert, null);
 
-const { data: ownSpace, error: ownInsertError } = await second.client
+const { data: unauthorizedSpace, error: unauthorizedInsertError } = await second.client
   .from("finance_spaces")
-  .insert({ owner_id: second.userId, space_type: "personal", display_name: "Synthetic personal" })
-  .select("id")
-  .single();
-assert.equal(ownInsertError, null);
-assert.ok(ownSpace?.id);
+  .insert({ owner_id: second.userId, space_type: "personal", display_name: "Denied other wallet" })
+  .select("id");
+assert.ok(unauthorizedInsertError);
+assert.equal(unauthorizedSpace, null);
 
 const { data: crossUpdate, error: crossUpdateError } = await second.client
   .from("finance_spaces")
