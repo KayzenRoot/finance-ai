@@ -4,23 +4,10 @@ on:
   pull_request:
     branches:
       - main
-    paths:
-      - "supabase/**"
-      - "tests/**"
-      - "package.json"
-      - "package-lock.json"
-      - ".github/workflows/supabase-ci.yml"
   push:
     branches:
       - main
-    paths:
-      - "supabase/**"
-      - "tests/**"
-      - "package.json"
-      - "package-lock.json"
-      - ".github/workflows/supabase-ci.yml"
   workflow_dispatch:
-
 permissions:
   contents: read
 
@@ -29,8 +16,42 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  scope:
+    name: Detect Supabase scope
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      run_supabase: ${{ steps.paths.outputs.run_supabase }}
+    steps:
+      - name: Checkout with comparison history
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+      - name: Detect backend-relevant changes
+        id: paths
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if [[ "$EVENT_NAME" != "pull_request" ]]; then
+            echo 'run_supabase=true' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" > "$RUNNER_TEMP/supabase-changed.txt"
+          if grep -Eq '^(supabase/|tests/|package\.json$|package-lock\.json$|src/lib/supabase/|src/lib/auth/|src/components/auth/|src/app/api/|src/app/dashboard/|src/app/login/|proxy\.ts$|\.github/workflows/supabase-ci\.yml$)' "$RUNNER_TEMP/supabase-changed.txt"; then
+            echo 'run_supabase=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'run_supabase=false' >> "$GITHUB_OUTPUT"
+          fi
   supabase:
     name: Migration, RLS and synthetic wallet checks
+    needs: scope
+    if: needs.scope.outputs.run_supabase == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     permissions:
