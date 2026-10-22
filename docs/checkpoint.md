@@ -106,3 +106,15 @@ Na PR #17 foram incluídos testes end-to-end **na Data API Supabase local** em `
 ### M01 fechado / M02 iniciado (22/10/2026)
 
 A PR #17 foi integrada por squash normal na main `2fcdb5bf21ddb5f3293585a554f56525d34d2bd7`, depois de 5/5 required checks SUCCESS, CodeQL JS/TS e Socket Security SUCCESS; 49/49 pgTAP (21 M00, 28 M01), EVM/Data API sintéticos e restore em CI. Issue #3 encerrada como completed. M02 issue #4 / branch `feature/fai-m02-auditable-ledger`: primeira fatia do ledger auditável, categoria por espaço, RPCs de inclusão/cancelamento/correção e saldos derivados. Status M02 IN PROGRESS até testes, interface, filtros e Evidence Bundle final. Sem deploy, gastos ou dados reais.
+
+### M02 — Evidence Bundle verified on ccf31b03a09abaa48657d424f57b9ca19ac60bf2 (2026-10-22)
+
+- M01: PR #17 merged normally (squash) into protected main at 2fcdb5bf21ddb5f3293585a554f56525d34d2bd7; issue #3 closed as completed.
+- M02: PR #18, issue #4, branch feature/fai-m02-auditable-ledger. HEAD of validated code: ccf31b03a09abaa48657d424f57b9ca19ac60bf2; M02 not merged.
+- CI: https://github.com/KayzenRoot/finance-ai/actions/runs/39840031471 — SUCCESS (Markdown lint, lint, typecheck, tests, build).
+- Dependency Review: https://github.com/KayzenRoot/finance-ai/actions/runs/39840031593 — SUCCESS.
+- CodeQL JS/TS: https://github.com/KayzenRoot/finance-ai/actions/runs/39840031475 — SUCCESS. Aggregated CodeQL status neutral (not required); SonarCloud and Socket Security checks SUCCESS.
+- Supabase: https://github.com/KayzenRoot/finance-ai/actions/runs/39840031499 — SUCCESS; Files=3, Tests=84, Result: PASS (M00 21 + M01 28 + M02 35). Synthetic EVM Data API owner isolation, authenticated entries, immutable correction/cancellation, internal transfers and revocation PASS. Synthetic export/restore PASS.
+- M02 delivered: categories by owner/space/type; RLS-protected immutable ledger, exact BRL cents, balance view with neutral internal transfers; SSR interface to create/rename/archive categories, post/correct/cancel entries and filter history by kind, category and date. Filtered history uses a separate reversal lookup to avoid displaying canceled entries as active.
+- Findings corrected: non-namespaced pgTAP variables; Next.js protected route requiring Suspense under cache components.
+- This document update creates a new HEAD requiring its own checks. Before final promotion validate HEAD, five required checks, CodeQL, Socket Security, and ruleset. No M02 merge, deploy, spending, real financial data, or M03.
