@@ -70,6 +70,12 @@ function revokeSyntheticOwner(userId) {
   ], { stdio: "pipe" });
 }
 
+// An anonymous client must not reach the private owner predicate.
+const anonymous = createUnauthenticatedClient();
+const { data: anonymousAccess, error: anonymousAccessError } = await anonymous.rpc("finance_is_authorized_owner");
+assert.ok(anonymousAccessError);
+assert.equal(anonymousAccess, null);
+
 const first = await authenticateSyntheticWallet();
 const second = await authenticateSyntheticWallet();
 assert.notEqual(first.userId, second.userId);
