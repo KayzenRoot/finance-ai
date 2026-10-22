@@ -1,6 +1,6 @@
 # Checkpoint
 
-Status: Source Pack, issues e pipeline inicial em revisão na PR FAI-PLAN-001. O inventário visual dos GitHub Apps foi adicionado nesta atualização; não é checkpoint APPROVED.
+Status: Source Pack, issues, pipeline e auditoria visual dos GitHub Apps em revisão na PR FAI-PLAN-001. Este checkpoint é uma proposta; não está APPROVED.
 
 ## Baseline
 
@@ -8,22 +8,22 @@ Status: Source Pack, issues e pipeline inicial em revisão na PR FAI-PLAN-001. O
 - Branch principal: main.
 - Baseline inicial: 7f6997f8e5797e43f2cc8c1b282998112cb09265.
 - Branch de trabalho: planning/FAI-PLAN-001-source-pack.
-- Último HEAD auditado antes do inventário: d6d309933d59709e9be747e5dff256131af2ec75.
+- HEAD do delta de auditoria verificado antes desta atualização do checkpoint: b72d53ac289a313d61e432d79cc2f4855f9f2908.
 - Código de produto: ainda inexistente.
 - Banco Finance AI: nenhum projeto selecionado ou criado.
 - CI de aplicação: scaffold ainda não existe; lint/test/typecheck/build do produto aguardam package.json e lockfile.
 - Open Finance: avaliação documental; nenhuma integração.
 - Dados reais: proibidos no repositório público.
 
-## Evidência
+## Evidência observada
 
 - PR de planejamento: [#1](https://github.com/KayzenRoot/finance-ai/pull/1), ainda draft.
 - Issues FAI-M00 a FAI-M11: #2–#13.
-- CI run #4 `39773788629` passou no Markdown lint e no gate de scaffold. Os comandos de aplicação foram pulados porque não existe package.json.
-- CodeQL Actions run #4 `39773788823` passou no HEAD `d6d309933d59709e9be747e5dff256131af2ec75`.
-- Dependency Review não foi executado porque não há manifesto/lockfile. Confirmar Dependency Graph em M00 antes do scaffold.
+- CI #6 `39777420129` passou no Markdown lint e no gate de scaffold. Os comandos de aplicação foram pulados porque não existe package.json.
+- CodeQL Actions #6 `39777420182` passou no HEAD de auditoria `b72d53ac289a313d61e432d79cc2f4855f9f2908`.
+- Dependency Review não executou porque não há manifesto/lockfile. Confirmar Dependency Graph em M00 antes do scaffold.
 - As capturas mostram 25 GitHub Apps na conta; quatro mostram pedidos de novas permissões. Veja [auditoria dos apps](github-app-audit.md). Configuração, escopo de repositório e execução fora de GitHub Actions permanecem não comprovados.
-- Evidência de workflow no HEAD auditado contém CI e CodeQL Actions; não comprova SonarQube, Codecov, CircleCI, Cirrus ou outros apps.
+- No HEAD auditado, somente CI e CodeQL Actions têm runs comprovados. Isso não comprova SonarQube, Codecov, CircleCI, Cirrus ou outros apps.
 - Nenhum merge ou deploy realizado.
 
 ## Direção adicionada
