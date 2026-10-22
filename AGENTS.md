@@ -8,3 +8,5 @@
 - Wallet signatures authenticate identity only. Do not add transaction signing, transfers, payment initiation, or automatic financial decisions.
 - Changes with external effects must stay in a draft PR until the applicable Work Order's evidence and validation gates are met.
 - Run `npm run lint`, `npm run typecheck`, `npm run test:ci`, and `npm run build` before submitting application changes.
+
+- Delivery policy: no mandatory human PR reviews or reviewer requests; never fake APPROVED. Keep branch protection, required CI/security checks, objective evidence and normal squash merges. Production/deploy/financial-data gates remain separate. See docs/review-policy.md.

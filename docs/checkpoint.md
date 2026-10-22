@@ -1,6 +1,6 @@
 # Checkpoint
 
-Status: FAI-PLAN-001 integrado à main. FAI-WO-M00-001 na PR #16, com Audit Delta 01 para bloquear carteiras autenticadas não autorizadas diretamente no RLS. O HEAD auditado `b8ea1ce006020b0d4d325277bc0f15ea6ca87ff4` passou todos os dez checks, incluindo os cinco obrigatórios e Supabase/pgTAP (21 testes), RPC de autorização, carteira Web3 sintética e restauração sintética. Commits subsequentes requerem revalidação do novo HEAD. Esta é uma proposta de Checkpoint Delta; M00 não foi APPROVED/merged e M01–M11 seguem bloqueados.
+Status: FAI-PLAN-001 integrado à main. Política vigente (22/10/2026): zero aprovações humanas obrigatórias; CI/segurança continuam exigidos. FAI-WO-M00-001 na PR #16, com Audit Delta 01 para bloquear carteiras autenticadas não autorizadas diretamente no RLS. O HEAD auditado `b8ea1ce006020b0d4d325277bc0f15ea6ca87ff4` passou todos os dez checks, incluindo os cinco obrigatórios e Supabase/pgTAP (21 testes), RPC de autorização, carteira Web3 sintética e restauração sintética. Commits subsequentes requerem revalidação do novo HEAD. Esta é uma proposta de Checkpoint Delta; M00 não foi APPROVED/merged e M01–M11 seguem bloqueados.
 
 ## Baseline
 
@@ -72,3 +72,9 @@ FAI-M00: auditar a [PR #16](https://github.com/KayzenRoot/finance-ai/pull/16) no
 ### Audit Delta 04 — aprovação antiga invalidada (proposto)
 
 Em segunda consulta ao ruleset #25657724, foi confirmado `dismiss_stale_reviews_on_push=true`: aprovações anteriores são invalidadas com novos commits. Esta correção administrativa não altera o código da main. O HEAD documental `87494985f41b4799db940cce688bb20bfd48156f` passou 10/10 checks (CI 39818608427, CodeQL Actions 39818608348, CodeQL JS/TS 39818608358, Dependency Review 39818608363 e Supabase 39818608446, mais Socket/CodeQL). O novo commit documental precisa de revalidação própria. Ainda não há APPROVED independente nem confirmação acessível de secret scanning/push protection: M00 **BLOCKED**, PR #16 aberta e M01 não iniciado.
+
+### Audit Delta 06 — titular encerra obrigação de review humano (22/10/2026)
+
+**Política vigente, substituindo os requisitos humanos dos Deltas históricos:** o titular decidiu **0 approvals** no ruleset `Finance AI - Main Protection`, preservando PR, required checks e segurança. Não exigir `kayzenweb3` nem outra pessoa como reviewer; o workflow de solicitação automática foi retirado da PR #16. A conexão ao GitHub **não permite modificar o ruleset**, então `required_approving_review_count=0` só é efetivo após confirmação via API da alteração do administrador. No momento da primeira consulta deste delta, a regra ainda exigia `1`.
+
+A PR #16 permanece aberta na branch `feature/fai-m00-secure-foundation`; conferir novo HEAD e checks após este commit. O critério para encerramento técnico do M00 é a evidência objetiva de migração/RLS, CI e Sonar/CodeQL se aplicáveis, registro da decisão de risco e aceitação de squash merge normal pelo GitHub sem bypass. Recursos de produção, secret scanning/push protection e backups reais são verificações de pré-produção; **não bloquear a escrita do M01 por ausência de infraestrutura de produção**. Dados reais e deploy permanecem proibidos até gates específicos.

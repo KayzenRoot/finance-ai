@@ -28,7 +28,7 @@ Jobs independentes rodam em paralelo, cancelam execuções antigas da mesma PR e
 - Dependabot agrupa minor/patch para limitar volume; major continua revisão separada.
 - Tornar o repositório privado pode mudar os limites gratuitos de runners/armazenamento; reavaliar antes da mudança.
 - Nenhum workflow publica, faz deploy ou altera dados Supabase.
-- Em auditoria anterior, `main` estava sem proteção; em 22/10/2026 o ruleset #25657724 foi ativado e passou a exigir PR, aprovação, cinco checks, squash, branch atualizada e bloqueio de force-push/deleção. A conexão GitHub verifica essa regra, mas não permite editá-la.
+- Em auditoria anterior, `main` estava sem proteção; em 22/10/2026 o ruleset #25657724 foi ativado com PR, cinco checks, squash, branch atualizada e bloqueio de force-push/deleção; a exigência de aprovação humana será alterada para zero por decisão do titular. A conexão GitHub verifica essa regra, mas não permite editá-la.
 
 ## Ferramentas e uso nesta fase
 
@@ -60,9 +60,16 @@ Jobs independentes rodam em paralelo, cancelam execuções antigas da mesma PR e
 - Sempre presentes: `Markdown lint`, `Application checks`, `Dependency Review`, `Detect Supabase scope` e `Migration, RLS and synthetic wallet checks` (este último pode ficar **skipped** após detecção de escopo, condição considerada aprovada pelo GitHub).
 - `CodeQL Actions` e `Analyze JavaScript and TypeScript` continuam condicionais ao tipo de alteração; não devem ser adicionados à lista universal de required checks enquanto não houver presença garantida em toda PR. Continuam gates obrigatórios da auditoria quando executados.
 - O detector falha de forma segura se não conseguir comparar o HEAD com a base da PR. Comparação é feita com histórico completo e `git diff --name-only`, sem executar código da PR no contexto privilegiado.
-- Ao configurar um ruleset: exigir PR, branches atualizadas, bloquear force-push e deleção, exigir os cinco checks estáveis, restringir bypass e definir revisão apropriada. Revalidar numa PR apenas documental e numa PR que altere migrações.
-- Ruleset ativo [Finance AI - Main Protection](https://github.com/KayzenRoot/finance-ai/rules/25657724), confirmado por leitura da API GitHub. Exige 1 aprovação independente, resolução de conversas e os cinco checks estáveis. A conexão atual não possui operação administrativa para **editar** regras. `dismiss_stale_reviews_on_push=true` confirmado em segunda leitura após ajuste administrativo. Confirmação de secret scanning e push protection ainda pendente.
+- Ao configurar um ruleset: exigir PR, branches atualizadas, bloquear force-push e deleção, exigir os cinco checks estáveis e restringir bypass. Não exigir aprovação humana obrigatória na política vigente. Revalidar numa PR apenas documental e numa PR que altere migrações.
+- Ruleset ativo [Finance AI - Main Protection](https://github.com/KayzenRoot/finance-ai/rules/25657724), confirmado por leitura da API GitHub. No último read-back antes da atualização administrativa, ainda exigia 1 aprovação humana; o titular determinou alterá-la para **0**, mantendo os cinco checks. A conexão atual não possui operação administrativa para **editar** regras. `dismiss_stale_reviews_on_push=true` confirmado em segunda leitura após ajuste administrativo. Confirmação de secret scanning e push protection ainda pendente.
 
-## Política de revisor padrão e solicitação automática
+## Política atual: desenvolvimento sem aprovação humana obrigatória
 
-O revisor padrão do Finance AI é `kayzenweb3`; a [política de review](review-policy.md) detalha o fluxo. O workflow `.github/workflows/default-pr-reviewer.yml` usa `pull_request_target` **apenas para consultar permissões e solicitar review**; ele nunca faz checkout da PR, executa script vindo da PR, concede aprovação ou altera proteções. A permissão `pull-requests: write` está isolada nesse workflow de metadados. Seu check não é required. A conta precisa ter `write` ou superior, caso contrário é emitido aviso e a PR continua bloqueada pela aprovação requerida.
+Em 22/10/2026, o titular substituiu o fluxo de reviewer fixo por um fluxo de engenharia orientado a evidências: **zero aprovações humanas obrigatórias**, sem solicitar review de `kayzenweb3` ou de outras pessoas. Consultar [política de entrega](review-policy.md).
+
+- Toda mudança continua em branch e PR com rastreabilidade.
+- Os **cinco required checks** continuam obrigatórios; CodeQL e Socket Security são examinados quando disponíveis.
+- O agente corrige falhas demonstradas, revalida o HEAD final, verifica o ruleset e registra um checkpoint objetivo. Nunca declarar SUCCESS sem execução real.
+- Squash merge normal, sem bypass, só após o GitHub aceitar as regras ativas e as restrições do Work Order; nenhuma implantação, gasto, produção ou dado financeiro real está incluído nesta mudança.
+- A exigência de `required_approving_review_count=0` deve ser aplicada manualmente no ruleset por administrador, pois a conexão GitHub não oferece operação de administração. Sem isso o GitHub poderá continuar bloqueando o merge.
+- O workflow `default-pr-reviewer.yml` foi removido da branch M00 porque o proprietário não deseja mais solicitações de revisão humanas automáticas.
