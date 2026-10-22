@@ -123,3 +123,8 @@ h1 { max-width: 720px; margin: 24px 0 20px; font-family: Georgia, "Times New Rom
 .finance-panel details input,.finance-panel details select{background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:9px;min-width:0;width:100%}
 .finance-panel details .finance-form{margin-top:12px}
 .finance-workspace header a:not(.brand){font-size:13px;color:var(--green-dark);text-decoration:underline}
+
+/* M03: projection boxes remain visually separate from confirmed balances */
+.grid-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.grid-stats .finance-panel h2{font-family:inherit;font-weight:800;color:var(--green-dark);margin:10px 0}
+@media(max-width:700px){.grid-stats{grid-template-columns:1fr}}
