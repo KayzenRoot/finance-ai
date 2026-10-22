@@ -76,17 +76,17 @@ select throws_ok($$select public.finance_record_debt_observation(
  p_as_of_date=>current_date,p_cet_percent=>25,p_cet_period=>'annual')$$,
  '22023','Invalid debt observation or missing rate provenance','CET source must exist');
 
-select throws_ok($select public.finance_record_debt_observation(
+select throws_ok($$select public.finance_record_debt_observation(
  p_debt_id=>current_setting('finance_ai.m04_debt')::uuid,p_source_reference=>'Overprecise synthetic interest',
  p_as_of_date=>current_date,p_interest_percent=>2.123456789,p_interest_period=>'monthly',
- p_interest_source=>'Synthetic contract')$,
+ p_interest_source=>'Synthetic contract')$$,
  '22023','Invalid debt observation or missing rate provenance',
  'rate over eight decimal places rejected instead of silently rounded');
 
-select throws_ok($select public.finance_record_debt_observation(
+select throws_ok($$select public.finance_record_debt_observation(
  p_debt_id=>current_setting('finance_ai.m04_debt')::uuid,p_source_reference=>'Overprecise synthetic CET',
  p_as_of_date=>current_date,p_cet_percent=>31.123456789,p_cet_period=>'annual',
- p_cet_source=>'Synthetic CET')$,
+ p_cet_source=>'Synthetic CET')$$,
  '22023','Invalid debt observation or missing rate provenance',
  'CET over eight decimal places rejected instead of silently rounded');
 
