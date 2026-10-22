@@ -24,7 +24,7 @@ Jobs independentes rodam em paralelo, cancelam execuções antigas da mesma PR e
 - CI não recebe secrets de produção e usa somente fixtures sintéticas.
 - O check de aplicação exige lockfile e scripts lint, typecheck, test:ci e build.
 - npm audit bloqueia vulnerabilidades HIGH/CRITICAL na árvore instalada.
-- Dependency Review usa filtro por manifest/lockfile para não gastar runner em PRs de documentação. Dependabot npm já encontrou o manifesto e a configuração de updates passou.
+- Dependency Review usa filtro por manifest/lockfile para não gastar runner em PRs de documentação. Na primeira execução com lockfile da PR #16, o GitHub recusou a análise porque Dependency Graph está desativado; não foi um achado de vulnerabilidade. Ativar o grafo em Settings → Code security and analysis e repetir o check.
 - Dependabot agrupa minor/patch para limitar volume; major continua revisão separada.
 - Tornar o repositório privado pode mudar os limites gratuitos de runners/armazenamento; reavaliar antes da mudança.
 - Nenhum workflow publica, faz deploy ou altera dados Supabase.
@@ -34,7 +34,7 @@ Jobs independentes rodam em paralelo, cancelam execuções antigas da mesma PR e
 
 - **GitHub Actions:** único provedor obrigatório de CI. Runners padrão são gratuitos e ilimitados enquanto o repositório usar plano público; as condições mudam ao tornar o repositório privado.
 - **CodeQL e secret scanning:** recursos nativos apropriados a repositório público; confirmar status efetivo nas configurações.
-- **Dependency Review e Dependabot:** workflows/configuração presentes; a execução de Dependency Review será confirmada na primeira PR com lockfile. A validação do Dependabot passou; sua atualização npm inicial falhou antes do scaffold por não existir `package.json`, agora adicionado.
+- **Dependency Review e Dependabot:** configuração e workflow presentes. Dependabot está configurado; a primeira execução npm falhou antes do scaffold por não existir `package.json`. O workflow de Dependency Review da PR #16 não analisou dependências porque o Dependency Graph está desativado no repositório; a integração conectada não tem permissão administrativa para ativá-lo.
 - **Socket Security:** o app executou seu check “Project Report” com sucesso após a integração da PR #1. Mantê-lo como sinal auxiliar até definir uma política de bloqueio.
 - **SonarQube Cloud:** app visível na conta e plano OSS disponível para organizações open source. Candidato a check complementar depois de confirmar acesso ao Finance AI, elegibilidade e quality gate; ainda não há execução comprovada.
 - **StepSecurity:** plano Community gratuito para repositórios públicos; candidato a auditoria/hardening de workflow. Não está comprovado como check ativo neste repositório.

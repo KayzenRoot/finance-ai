@@ -8,6 +8,8 @@ O inventário foi transcrito das capturas da página de GitHub Apps instalados n
 
 Na PR #1, CI #12 (run `39783505384`) e CodeQL Actions #12 (run `39783505477`) passaram. Após o merge, CI (run `39783841804`), CodeQL Actions (run `39783841695`), Dependabot config (run `119841761656`) e Socket Security “Project Report” (run `119841716398`) passaram em `main`. O run npm do Dependabot (run `39783878739`) falhou por falta de `package.json`; o scaffold agora adiciona o manifesto/lockfile. Essa evidência comprova esses apps no repositório; não comprova outros apps da lista.
 
+Na PR #16, CI (run `39790095995`), CodeQL JS/TS (`39790095999`), CodeQL Actions (`39790095996`), Supabase migration/RLS/Web3/restore (`39790096119`) e os checks do Socket Security passaram. Dependency Review (`39790096145`) não analisou o lockfile: o GitHub informou que o Dependency Graph está desativado. É uma configuração pendente do repositório, não um achado de vulnerabilidade; a integração GitHub conectada não tem acesso administrativo para ativá-la.
+
 A branch `main` foi observada `protected:false`, sem required checks. A integração GitHub disponível não tem permissão administrativa para alterar regras de proteção. Secret scanning e push protection devem ser conferidos no Settings; não afirmar que estão ativos até confirmação.
 
 ## Solicitações de permissões
