@@ -43,4 +43,4 @@ Status: FAI-PLAN-001 integrado à main. FAI-WO-M00-001 na PR #16, com Audit Delt
 
 ## Próximo gate
 
-FAI-M00: auditar a [PR #16](https://github.com/KayzenRoot/finance-ai/pull/16) no HEAD mais recente e a proteção de titular único recém-implementada. A `main` segue sem branch protection ou required checks; revisão, configuração e comprovação são gates pendentes para merge. A fundação não recebe dados reais até autorização, ambiente privado e backup independente com restauração ensaiada. M01–M11 seguem bloqueados até APPPROVED do M00 e dos contratos compartilhados.
+FAI-M00: auditar a [PR #16](https://github.com/KayzenRoot/finance-ai/pull/16) no HEAD mais recente e a proteção de titular único recém-implementada. A `main` segue sem branch protection ou required checks; revisão, configuração e comprovação são gates pendentes para merge. A fundação não recebe dados reais até autorização, ambiente privado e backup independente com restauração ensaiada. M01–M11 seguem bloqueados até APPROVED do M00 e dos contratos compartilhados.
