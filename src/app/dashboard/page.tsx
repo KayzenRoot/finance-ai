@@ -99,7 +99,7 @@ async function DashboardContent({ searchParams }: { searchParams: Promise<Params
   return <div className="finance-workspace">
     <div className="finance-heading">
       <div><p className="eyebrow">FINANCE AI · M01/M02</p><h1>Seus espaços financeiros.</h1>
-        <p><Link className="finance-link" href="/dashboard/ledger">Abrir livro de receitas, despesas e categorias →</Link></p>
+        <p><Link className="finance-link" href="/dashboard/ledger">Abrir livro de receitas, despesas e categorias →</Link> · <Link className="finance-link" href="/dashboard/commitments">Ver contas a pagar e receber →</Link></p>
         <p>Contas e transferências internas, sem conexão bancária ou movimentação de fundos.</p></div>
       <div className="finance-total"><span>Referência consolidada</span><strong>{formatBrlCents(globalTotal)}</strong><small>Inclui contas arquivadas para preservar o histórico. Não representa extrato bancário nem dinheiro disponível.</small></div>
     </div>
