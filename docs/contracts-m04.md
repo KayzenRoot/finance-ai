@@ -5,6 +5,7 @@
 **Status:** implementação inicial de banco, aguardando CI e interface. Sem deploy nem dados reais.
 
 ## Decisões
+
 - `finance_debts` contém somente identidade do credor, owner e espaço. Criação RPC exclusiva.
 - `finance_debt_observations` preserva snapshots imutáveis com fonte e data obrigatórias: saldo, mínimo, vencimento, juros percentuais e período explícito (daily/monthly/annual), fonte da taxa, CET percentual e período e fonte, multa fixa e consequências conhecidas. Cada campo não informado é **NULL**, não zero.
 - Não se estimam juros, CET, consequências nem multas inexistentes. Não se convertem taxas de períodos diferentes sem premissas e modelo revisado. A tela precisa mostrar o estado incompleto, não uma taxa inventada. A fonte textual identifica documento informado pelo titular, não prova sua veracidade.
