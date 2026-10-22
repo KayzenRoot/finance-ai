@@ -502,9 +502,9 @@ const {data:oldDebtObservation,error:oldDebtError}=await first.client.rpc("finan
  p_balance_cents:"999999",
 });
 assert.equal(oldDebtError,null);assert.ok(oldDebtObservation);
-const {data:afterHistory,error:historyError}=await first.client.from("finance_debt_latest")
+const {data:afterHistory,error:debtHistoryError}=await first.client.from("finance_debt_latest")
  .select("balance_cents").eq("id",debtId).single();
-assert.equal(historyError,null);
+assert.equal(debtHistoryError,null);
 assert.equal(afterHistory.balance_cents,"123456","older data must not override newer source");
 const {data:forbiddenUpdate,error:forbiddenUpdateError}=await first.client
  .from("finance_debt_observations").update({balance_cents:"1"}).eq("id",observation).select("id");
