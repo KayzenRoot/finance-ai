@@ -1,0 +1,20 @@
+# M01 — Espaços, contas e transferências internas
+
+Work Order: FAI-WO-M01-001, issue #3. **Estado: implementação em PR, ainda não integrado.** Base M00: `04797f1d058b5a37586383b60a5a3e6dc4037926`.
+
+## Contrato da persistência
+
+- `finance_spaces` (M00) permanece restrito ao único titular provisionado.
+- `finance_accounts`: vincula `owner_id` e `space_id` por chave estrangeira composta; tipos `bank`, `cash`, `card`; moeda BRL; `opening_balance_cents` inteiro assinado e `opening_balance_date`; arquivamento via `archived_at`.
+- `finance_transfers`: registro **interno e imutável**, sem envio bancário, assinatura de transação ou integração de pagamento. O cliente não tem permissão SQL para inserir transferências diretamente.
+- RPC `finance_record_transfer(from, to, amount_cents, date)`: SECURITY DEFINER com `search_path` vazio; verifica JWT, singleton autorizado, mesma titularidade, contas não arquivadas, origem distinta, montante positivo e data de referência.
+- `finance_transfer_legs`: view `security_invoker` cria os dois lançamentos vinculados `-x,+x` de cada transferência. Sua soma consolidada é sempre **0**.
+- `finance_account_balances`: view `security_invoker` calcula `opening_balance_cents + soma(legs)`. Os valores são `numeric` no Postgres para evitar overflow e aritmética decimal imprecisa; no cliente converter exclusivamente para texto/centavos e nunca float.
+- Migração existente de M00 não é modificada. O novo script é sequencial e depende dela.
+
+## Gates e riscos
+
+- Teste pgTAP com usuários sintéticos confirma isolamento de espaço, conta e transferência; valor exato, soma zero, arquivamento, imutabilidade e revogação.
+- Conta pode ser renomeada/arquivada. Titular, espaço, moeda e ID são imutáveis; saldo de referência fica congelado depois de qualquer transferência. M02 adicionará lançamentos sem transformar transferência interna em receita/despesa.
+- Valores da loja/pessoal nunca devem aparecer em logs GitHub nem fixtures reais.
+- O backend Supabase hospedado e dados reais permanecem fora de escopo. UI, API e interação completa serão completadas na PR M01 antes de declarar o módulo aprovado.
