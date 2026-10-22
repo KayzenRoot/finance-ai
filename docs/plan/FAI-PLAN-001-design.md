@@ -1,6 +1,6 @@
 # FAI-PLAN-001 — Design e planejamento inicial
 
-Status: Source Pack e pipeline inicial registrados para revisão na PR #1; sem merge ou deploy.
+Status: Source Pack e pipeline inicial passaram pela auditoria técnica do FAI-PLAN-001 (APPROVED para revisão do titular); PR #1 aberta para revisão, sem merge ou deploy.
 
 ## Objetivo
 
