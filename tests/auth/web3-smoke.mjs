@@ -70,7 +70,19 @@ const { data: unprovisionedSpace, error: unprovisionedInsertError } = await firs
 assert.ok(unprovisionedInsertError);
 assert.equal(unprovisionedSpace, null);
 
+const { data: beforeProvision, error: beforeProvisionError } = await first.client.rpc("finance_is_authorized_owner");
+assert.equal(beforeProvisionError, null);
+assert.equal(beforeProvision, false);
+
 provisionSyntheticOwner(first.userId);
+
+const { data: afterProvision, error: afterProvisionError } = await first.client.rpc("finance_is_authorized_owner");
+assert.equal(afterProvisionError, null);
+assert.equal(afterProvision, true);
+
+const { data: otherWalletAuthorized, error: otherWalletAuthError } = await second.client.rpc("finance_is_authorized_owner");
+assert.equal(otherWalletAuthError, null);
+assert.equal(otherWalletAuthorized, false);
 
 const { data: firstSpace, error: firstInsertError } = await first.client
   .from("finance_spaces")
