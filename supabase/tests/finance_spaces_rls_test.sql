@@ -1,7 +1,14 @@
 begin;
-select plan(20);
+select plan(21);
 
 select has_table('finance_private', 'authorized_owners', 'private single-owner registry exists');
+
+select ok(
+  not has_schema_privilege('authenticated', 'finance_private', 'USAGE')
+  and not has_schema_privilege('anon', 'finance_private', 'USAGE')
+  and not has_table_privilege('authenticated', 'finance_private.authorized_owners', 'SELECT'),
+  'neither authenticated nor anonymous users can inspect the owner registry'
+);
 
 select has_table('public', 'finance_spaces', 'finance_spaces is present');
 select ok(
