@@ -1,0 +1,91 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  markdown:
+    name: Markdown lint
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Lint Markdown
+        uses: DavidAnson/markdownlint-cli2-action@21c1be1b93ad9ed58fa840aacc3f279cde2a72ff # v24
+        with:
+          globs: |
+            README.md
+            docs/**/*.md
+
+  application:
+    name: Application checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Detect Node application
+        id: detect
+        shell: bash
+        run: |
+          if [[ -f package.json ]]; then
+            echo "has_node_app=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_node_app=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Set up Node.js
+        if: steps.detect.outputs.has_node_app == 'true'
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Install, lint, typecheck, test and build
+        if: steps.detect.outputs.has_node_app == 'true'
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
+          NEXT_PUBLIC_PRIVY_APP_ID: test_only_placeholder
+        run: |
+          test -f package-lock.json || { echo "Commit package-lock.json before enabling npm CI."; exit 1; }
+          npm ci
+          node -e "const s = require('./package.json').scripts || {}; const r = ['lint', 'typecheck', 'test:ci', 'build']; const m = r.filter((k) => !s[k]); if (m.length) { console.error('Missing required npm scripts: ' + m.join(', ')); process.exit(1); }"
+          npm run lint
+          npm run typecheck
+          npm run test:ci
+          npm run build
+      - name: Report application scaffold pending
+        if: steps.detect.outputs.has_node_app != 'true'
+        run: echo "No package.json yet. Product checks activate with the M00 application scaffold."
+
+  dependency-review:
+    name: Dependency Review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Review dependency changes
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5
+        with:
+          fail-on-severity: high

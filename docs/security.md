@@ -1,35 +1,44 @@
-# Security and Privacy
+# Segurança e privacidade
 
-Status: proposta de planejamento em revisão — Work Order FAI-PLAN-001. Classificação de risco do produto: ELEVATED, pois armazena informação financeira sensível e oferece apoio à decisão; pagamentos automáticos estão excluídos.
+Status: proposta atualizada — classificação ELEVATED, pois o produto processará dados financeiros sensíveis e apoiará decisões. Pagamentos automáticos não existem.
 
 ## Dados protegidos
 
-Saldos, transações, credores, dívidas, renda e rotina financeira são dados de alta sensibilidade. O repositório público contém somente código, documentação e dados sintéticos.
+Saldos, transações, credores, renda, endereços de carteira associados ao titular e comportamento financeiro são sensíveis. O repositório público contém somente código, documentação e dados sintéticos.
 
-## Controles obrigatórios antes de produção
+## Controles obrigatórios
 
-- Autenticação forte e sessão segura; detalhes definidos antes da implementação.
-- Autorização em cada operação no servidor por titular e espaço.
+- Autenticação forte e sessão segura; fluxo final depende do ADR do FAI-M00.
+- Supabase RLS habilitado em todas as tabelas expostas e políticas que autorizem titular e espaço no banco.
+- Testes contra IDOR/BOLA alterando IDs do cliente; não confiar somente em filtros da API ou UI.
+- Não usar user_metadata editável pelo usuário para autorização.
+- Chaves service-role, assinatura JWT e segredos ficam apenas no servidor/cofre; nunca no bundle ou cliente.
+- Toda operação verifica identidade, titular e espaço no servidor.
 - Criptografia em trânsito e em repouso fornecida por infraestrutura revisada.
-- Segredos apenas em cofre de segredos/variáveis protegidas; nunca no Git.
-- Privilégio mínimo para banco, provedores e IA.
-- Exportação e exclusão de dados testadas.
-- Registro de auditoria sem valores completos, credenciais ou descrições sensíveis.
-- Backup protegido e teste de restauração antes de armazenar dados reais.
-- Revisão de dependências, análise estática, varredura de segredos e threat model antes de liberar.
-- Retenção mínima de arquivos de extrato; exclusão rastreável após importação quando aplicável.
-- Separação e verificação de acesso entre Pessoal e Loja.
+- Exportação, exclusão, backup e restauração testados antes de dados reais.
+- Auditoria sem valores completos, credenciais ou descrições sensíveis.
+- Threat model e resposta a incidente definidos antes de produção.
+- Repositório público e CI não recebem saldo real, extrato, endereço de carteira de produção, token ou seed phrase.
+- Carteira é somente leitura. Uma assinatura curta pode ser usada apenas como desafio de autenticação, sem autorização de transação.
+- Nunca solicitar, armazenar ou registrar seed phrase, chave privada ou senha de carteira.
+- Logs e erros não guardam tokens, cabeçalhos de autorização ou dados financeiros brutos.
+- Dependências e GitHub Actions usam SHAs completos; Dependabot mantém referências atualizadas.
+- Workflows usam pull_request, permissões mínimas e nenhum segredo em execução de código de fork.
+- Provedores de IA só recebem o mínimo de dados necessário; entrada de extrato é conteúdo não confiável.
+- Cloudinary não armazena extratos CSV; só avaliar imagem aprovada com upload assinado e retenção curta.
 
 ## IA e conteúdo não confiável
 
-- Nunca enviar credenciais bancárias, tokens de sessão ou dados além do mínimo necessário ao provedor LLM.
-- Usuário não entrega credenciais de banco para a IA.
-- Descrições de lançamentos e arquivos importados são conteúdo não confiável; não podem alterar permissões ou instruções de sistema.
-- IA não calcula juros, ranking ou saldo final. Usa funções determinísticas com saída tipada.
-- A IA pode consultar dados autorizados e preparar rascunhos. Toda gravação exige revisão e confirmação.
-- Não há ferramenta ou segredo que permita iniciar pagamentos, transferências ou contratação de crédito.
-- Política de retenção, região de processamento e uso de dados do provedor LLM devem ser avaliadas no ADR.
+- IA não recebe credenciais bancárias, tokens de sessão ou contexto além do mínimo necessário.
+- IA não calcula juros, ranking ou saldo final; funções determinísticas produzem resultados tipados.
+- Descrições e arquivos importados não alteram permissões nem instruções de sistema.
+- IA pode consultar dados autorizados e preparar rascunhos. Toda gravação exige confirmação.
+- Nenhum endpoint, segredo ou ferramenta permite pagamento, transferência ou contratação de crédito.
 
-## Incidentes e resposta
+## Integração cripto
 
-Antes de produção, definir canal de notificação, revogação de credenciais, restauração, exclusão de dados e comunicação de incidente. Qualquer vazamento de dados reais exige interromper a publicação, preservar evidências, revogar segredos afetados e tratar o incidente antes de seguir.
+Endereços públicos são associados a identidade e merecem proteção. Validar posse com o protocolo do provedor e armazenar apenas o vínculo e os saldos necessários. Nenhuma capacidade de assinar transação ou movimentar fundos deve existir.
+
+## Resposta a incidentes
+
+Antes de produção, definir revogação de credenciais, restauração, exclusão, comunicação e canal de suporte. Se dado real vazar, interromper publicação, preservar evidência e revogar credenciais afetadas antes de seguir.

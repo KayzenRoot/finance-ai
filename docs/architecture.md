@@ -1,40 +1,49 @@
-# Architecture
+# Arquitetura
 
-Status: proposta de planejamento em revisão — Work Order FAI-PLAN-001.
+Status: proposta atualizada pela direção do titular em 2026-10-22; decisões de stack e identidade serão fechadas no FAI-M00 antes da aplicação.
 
-## Modelo lógico
+## Componentes
 
-1. Interface web responsiva, com áreas Pessoal, Loja, Visão consolidada, Contas, Compromissos, Dívidas e Plano.
-2. API autenticada, responsável por autorização, validação, trilha de auditoria e chamadas ao domínio.
-3. Módulos de domínio independentes: espaços e contas; livro de lançamentos; contas a pagar/receber; dívidas; projeção; prioridade/cenários; importação/exportação.
-4. Persistência relacional transacional, escolhida no ADR técnico antes de codificar.
-5. Adaptador de IA separado, com permissões somente de leitura para consultas e permissão para criar rascunhos. Nenhum endpoint de pagamento será exposto.
-6. Importador CSV separado, com validação, prévia e chave de idempotência antes de gravar.
+1. Interface web responsiva para Pessoal, Loja, consolidado, contas, compromissos, dívidas e plano de ação.
+2. API autenticada no servidor para autorização, validação, auditoria e acesso ao domínio.
+3. Domínio determinístico para saldos, lançamentos, projeções, custos de atraso e cenários de pagamento.
+4. Supabase Postgres como sistema de registro escolhido; migrações versionadas e RLS em toda tabela exposta.
+5. Adaptador de autenticação que avalia Supabase Auth e Privy para login com carteira; uma identidade verificada precisa mapear para o titular da aplicação e preservar RLS.
+6. Adaptador cripto de somente leitura para endereços autorizados, snapshots de saldos e fonte/horário de preço.
+7. Adaptador LLM isolado; recebe apenas contexto mínimo e resultados estruturados do domínio.
+8. CI em GitHub Actions; o deploy permanece fora do escopo até uma decisão posterior.
 
-## Fluxo de uma recomendação
+## Direção de stack
 
-1. O usuário solicita uma análise.
-2. A API verifica identidade e espaço selecionado.
-3. Serviços determinísticos calculam caixa disponível, datas, custos conhecidos e opções.
-4. O adaptador envia à IA apenas o contexto mínimo necessário e os resultados estruturados.
-5. A interface mostra justificativa, fontes, premissas, riscos e dados ausentes.
-6. O usuário pode ajustar um cenário ou confirmar um rascunho. A decisão de pagamento permanece fora do sistema.
+A proposta para avaliação do M00 é Next.js, TypeScript, Node LTS e npm, com Supabase. Esta combinação permite entregar uma aplicação web responsiva e manter autenticação, validação e integrações sensíveis no servidor. O FAI-M00 registrará ADR e poderá ajustar essa proposta antes do scaffold.
 
-## Regras arquiteturais
+## Identidade, carteira e dados
 
-- Valores monetários são inteiros em centavos ou decimal exato; taxas preservam período e unidade.
-- As regras financeiras ficam em serviços testáveis sem LLM.
-- Entrada estimada não é tratada como dinheiro disponível confirmado.
-- Transferência entre espaços é composta por lançamentos ligados e não pode inflar o consolidado.
-- Pagamento de conta vincula a obrigação ao lançamento efetivamente confirmado, sem contagem dupla.
-- Cada módulo possui uma interface e diretório próprios. Contratos compartilhados são definidos antes de PRs paralelas.
-- Erros de leitura/importação não mudam silenciosamente dados confirmados.
-- Dados de um espaço são filtrados e autorizados em todo acesso no servidor, não apenas na interface.
+- Supabase é o banco selecionado.
+- Privy é o candidato solicitado para autenticação via carteira; validar SIWE/SIWS, renovação de sessão, vinculação de identidade e integração Supabase/RLS antes de produção.
+- Endereço público de carteira vinculado ao titular é dado sensível no contexto do produto.
+- O sistema nunca recebe seed phrase ou chave privada e não cria uma autorização para transferir cripto.
+- Saldos cripto são snapshots com rede, ativo, quantidade, valor de referência, fonte e horário.
+- Valor de mercado cripto não entra no caixa disponível para pagar contas; a tela distingue patrimônio de liquidez.
+- Cloudinary não é necessário no escopo atual, que usa CSV e não exige imagem. Só avaliar Cloudinary quando existir uma funcionalidade de imagem aprovada.
+- Open Finance e iniciação de pagamento continuam fora da V1.
 
-## Decisões técnicas ainda bloqueadoras
+## Fluxo de recomendação
 
-Stack, hospedagem, banco, identidade, criptografia gerenciada e provedor LLM não foram aprovados. O Work Order FAI-WO-M00-001 deve comparar opções por privacidade, custo total, uso em celular, exportação/backup, simplicidade e segurança, registrar um ADR e obter revisão antes da primeira implementação.
+1. O titular escolhe o espaço financeiro e pergunta sobre a situação.
+2. A API valida sessão, titular e espaço com políticas do banco.
+3. Serviços determinísticos calculam caixa confirmado, compromissos, custos conhecidos e cenários.
+4. A IA recebe os resultados e dados mínimos necessários para explicar opções e incertezas.
+5. A interface mostra critérios, premissas, fontes, data de atualização e limitações.
+6. O titular pode editar ou confirmar um rascunho. A aplicação nunca inicia pagamento.
 
-## Limites de integração
+## Regras de domínio
 
-Na V1, fontes são entrada manual e arquivos CSV do usuário. Open Finance e iniciação de pagamento permanecem fora do sistema de produção até avaliação específica do parceiro, consentimento, segurança, custo e obrigações regulatórias.
+- Dinheiro usa centavos inteiros ou decimal exato; taxas preservam unidade e período.
+- Recebíveis incertos não são caixa confirmado.
+- Transferências internas são ligadas e neutralizadas no consolidado.
+- Obrigação liquidada liga-se ao lançamento correspondente para não contar duas vezes.
+- Snapshot antigo de saldo/preço aparece como desatualizado.
+- Regras financeiras são testáveis sem LLM e sem rede.
+- Descrição de extrato e arquivos importados são conteúdo não confiável.
+- Nenhum acesso a dados é protegido somente por filtros da interface.

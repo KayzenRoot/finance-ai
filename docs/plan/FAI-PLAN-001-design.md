@@ -1,83 +1,51 @@
 # FAI-PLAN-001 — Design e planejamento inicial
 
-Status: proposta detalhada registrada para rastreio; baseada na direção aprovada em conversa em 2026-10-22. Revisão do titular pendente.
+Status: Source Pack e pipeline inicial registrados para revisão na PR #1; sem merge ou deploy.
 
-## OBJECTIVE
+## Objetivo
 
-Definir a V1 do Finance AI, estabelecer o Source Pack canônico, organizar módulos/issues e preparar execução por PRs pequenas, com critérios verificáveis e caminhos de paralelismo seguros.
+Definir a V1 do Finance AI, estabelecer Source Pack canônico, organizar módulos/issues e preparar PRs pequenas com critérios verificáveis e paralelismo seguro.
 
-## CONTEXT
+## Contexto
 
-O repositório estava vazio. O produto organiza finanças pessoais e da loja, contas, receitas, despesas, dívidas e prioridades em cenários de caixa apertado e renda variável. A V1 foi aprovada conceitualmente como experiência para um único titular, dois espaços financeiros, entrada manual/CSV, recomendações explicáveis e nenhuma execução de pagamento.
+O repositório estava vazio. A V1 cobre finanças pessoais e da loja, contas, recebíveis, despesas, dívidas, projeções, prioridades explicáveis e um assistente controlado pelo titular. A direção aprovada exclui pagamentos automáticos e Open Finance em produção.
 
-## SCOPE
+## Escopo desta Work Order
 
-- Source Pack em português para visão, requisitos, escopo, arquitetura, modelo de domínio, segurança, testes, deployment, backlog, DoD, decisões, Open Finance e checkpoint.
-- Issues modulares FAI-M00 a FAI-M10 com Work Orders estáveis e dependências.
-- Recomendação para priorizar ondas de execução e paralelismo após contratos compartilhados.
-- Stack, hosting, autenticação, banco e provedor LLM permanecem gate de M00 antes da implementação.
+- Source Pack em português para visão, requisitos, escopo, arquitetura, dados, segurança, CI, testes, implantação, backlog, DoD, decisões, Open Finance e checkpoint.
+- Issues FAI-M00 a FAI-M11 com Work Orders estáveis e dependências.
+- CI rápido com Markdown lint, check condicional da aplicação, Dependency Review, CodeQL e Dependabot.
+- Banco Supabase selecionado; Privy solicitado como candidato de login com carteira, sujeito a prova de RLS.
+- Criptoativos como snapshots de leitura separados de caixa; Cloudinary só se houver imagens.
+- Sequenciamento e paralelismo após contratos compartilhados.
 
-## OUT OF SCOPE
+## Fora do escopo
 
-- Código, UI implementada, deploy ou qualquer dado financeiro real.
-- Open Finance em produção, pagamento automático, usuários de equipe, contabilidade/fiscal, investimentos ou negociação automática.
+- Implementação da aplicação financeira, criação de banco de produção e deploy.
+- Open Finance em produção, pagamentos, assinatura de transações, dados financeiros reais.
+- Revisar/instalar apps Marketplace pelo usuário sem autenticação.
 - Merge da PR de planejamento.
 
-## FILES/SOURCES TO READ
+## Requisitos
 
-README.md; docs/project-overview.md; docs/requirements.md; docs/scope.md; docs/architecture.md; docs/data-model.md; docs/security.md; docs/test-plan.md; docs/deployment.md; docs/backlog.md; docs/definition-of-done.md; docs/decisions/DECISIONS.md; docs/open-finance.md; docs/checkpoint.md; issues FAI-M00 a FAI-M10.
+Atender REQ-FIN-001 a 012, REQ-CRYPTO-001 a 005, REQ-SEC-001 a 006, REQ-REL-001 a 003 e REQ-UX-001 na versão de planejamento. Nenhum documento pode afirmar que produto, auth, segurança ou integração já existe.
 
-## REQUIREMENTS
+## Regras de arquitetura
 
-Atender REQ-FIN-001 a REQ-FIN-012, REQ-SEC-001 a REQ-SEC-005, REQ-REL-001/002 e REQ-UX-001 na versão de planejamento. Nenhuma documentação pode afirmar que código, segurança, integração ou implantação já existem.
+- Um titular; Pessoal e Loja separados.
+- Supabase Postgres com RLS em dados expostos.
+- Dinheiro em centavos/decimal exato; cripto em snapshot datado, fora do caixa disponível.
+- Entradas incertas separadas do caixa confirmado.
+- IA explica e propõe rascunhos; pagamentos e transações não existem na V1.
+- Repositório público sem dados reais.
+- Decisões técnicas de framework, auth, LLM e hospedagem fechadas por ADR antes de código.
 
-## ARCHITECTURE RULES
+## Critérios de aceite
 
-- Um titular; espaços Pessoal e Loja separados.
-- Raciocínio numérico fora do LLM.
-- Dinheiro em centavos/decimal exato.
-- Entradas incertas ficam separadas do caixa confirmado.
-- IA somente consulta dados permitidos e propõe rascunhos; alteração exige confirmação; pagamento não existe na V1.
-- Dados reais proibidos no repositório público.
-- Decisões técnicas bloqueadoras precisam de ADR antes de código.
-
-## CONSTRAINTS
-
-- Nenhum desenvolvimento de produto nesta Work Order.
-- Nenhum merge ou deploy.
-- Não afirmar provider, stack, preço ou elegibilidade Open Finance sem evidência atual.
-- Issues precisam manter ID estável e critérios de aceite reproduzíveis.
-- Abrir PR de planejamento para revisão.
-
-## ACCEPTANCE CRITERIA
-
-1. Todos os documentos mínimos do Source Pack existem e são mutuamente consistentes.
-2. Escopo V1 e itens adiados estão identificados por necessidade/importância/futuro.
-3. Módulos têm dependências, entregáveis, testes e critérios verificáveis.
-4. O plano identifica pontos paralelizáveis e bloqueia trabalho quando contratos não estão estabilizados.
-5. Open Finance está explicado com fontes oficiais e não é tratado como API livre.
-6. Checkpoint declara o estado real: sem código, sem deploy e sem merge.
-7. A PR inclui hashes base/head, documentos e riscos de decisão pendentes.
-
-## TESTS
-
-- Verificação de todos os links de documentos relativos.
-- Verificação de consistência entre requisitos, escopo, módulos, DoD e decisões.
-- Busca de placeholders, contradições e afirmações sem evidência.
-- Revisão dos corpos de issues contra template de Work Order.
-- Nenhum teste de produto aplicável: não existe código.
-
-## DELIVERABLES
-
-- Source Pack versionado.
-- 11 issues de módulo com IDs FAI-M00 a FAI-M10.
-- PR draft de planejamento sem merge.
-- Checkpoint Delta proposto e inventário de decisões pendentes.
-
-## REVIEW FORMAT
-
-Auditar contra escopo, requisitos, arquitetura, critérios de aceite e DoD. Apontar findings por severidade, arquivo/seção, impacto, correção e evidência. Verificar SHA base/head e que nenhum código ou dado real foi incluído.
-
-## STOP CONDITION
-
-Parar após Source Pack e issues estarem na PR, revisão interna concluída e evidências registradas. Não iniciar código, deploy ou merge nesta Work Order.
+1. Source Pack e workflows estão presentes e coerentes.
+2. Escopo V1 e itens futuros estão identificados.
+3. Módulos têm dependências, critérios, testes e limites.
+4. CI executa checks e registra o resultado.
+5. Open Finance permanece fora da produção V1.
+6. Supabase/Privy/Cloudinary têm limites e condições declarados.
+7. PR inclui hashes base/head e riscos técnicos pendentes.

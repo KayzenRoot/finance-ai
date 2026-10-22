@@ -1,46 +1,50 @@
 # Finance AI
 
-Assistente financeiro de uso pessoal para organizar as finanças pessoais e da loja, projetar o caixa e explicar prioridades de pagamento com critérios verificáveis.
+Assistente financeiro privado para organizar finanças pessoais e da loja, projetar caixa e explicar prioridades com critérios verificáveis.
 
-## Estado do projeto
+## Estado
 
-Planejamento V1 em revisão pela PR FAI-PLAN-001. Não há implementação de produto. O repositório é público: dados financeiros reais, extratos, credenciais, segredos e identificadores pessoais são proibidos em commits, issues e exemplos.
+Planejamento e fundação de CI em revisão pela PR FAI-PLAN-001. Ainda não há aplicação, dados de produto, banco de produção ou deploy. O repositório é público: dados financeiros, endereços de carteira associados ao titular, credenciais, segredos e identificadores pessoais não podem entrar em commits, issues, exemplos, fixtures ou logs.
 
-## Hierarquia das fontes
+## Direção da V1
 
-1. docs/checkpoint.md
-2. docs/decisions/DECISIONS.md e ADRs aprovados
-3. docs/scope.md
-4. docs/definition-of-done.md
-5. docs/architecture.md
-6. docs/requirements.md
-7. project overview, security, test plan, deployment e data model
-8. docs/backlog.md e issues GitHub
+- Espaços Pessoal e Loja separados, contas, lançamentos, obrigações, recebíveis, dívidas, projeções e prioridades explicáveis.
+- Supabase Postgres como banco selecionado; RLS e políticas por titular são obrigatórios.
+- Login com carteira usando Privy é uma meta, condicionada a provar a integração com Supabase e RLS. Carteiras e criptoativos serão somente leitura.
+- Valores de cripto ficam separados de caixa disponível para pagar contas.
+- IA explica cálculos determinísticos e pode preparar rascunhos que exigem confirmação.
+- Sem Open Finance, assinatura de transações, pagamentos ou movimentação automática na V1.
+- Cloudinary só será adicionado se uma funcionalidade real de imagem, como anexos de comprovantes, for aprovada.
 
-Decisões aprovadas e evidências verificáveis prevalecem sobre memória da conversa. Propostas em revisão não são baseline aprovado.
+## Engenharia
+
+- CI: [docs/ci.md](docs/ci.md)
+- Workflows: GitHub Actions para lint, testes da aplicação quando houver scaffold, Dependency Review e CodeQL.
+- Dependabot agrupa atualizações semanais de Actions e npm.
+- SonarQube Cloud será integrado se a instalação no repositório e o plano OSS gratuito forem confirmados.
+- Plataforma de deploy será decidida depois; nenhum deploy está configurado.
 
 ## Source Pack
 
-- Visão do projeto: docs/project-overview.md
-- Requisitos: docs/requirements.md
-- Escopo: docs/scope.md
-- Arquitetura: docs/architecture.md
-- Modelo de domínio: docs/data-model.md
-- Segurança e privacidade: docs/security.md
-- Plano de testes: docs/test-plan.md
-- Implantação e operação: docs/deployment.md
-- Backlog modular: docs/backlog.md
-- Definition of Done: docs/definition-of-done.md
-- Decisões: docs/decisions/DECISIONS.md
-- Open Finance: docs/open-finance.md
-- Checkpoint: docs/checkpoint.md
+- [Visão do projeto](docs/project-overview.md)
+- [Requisitos](docs/requirements.md)
+- [Escopo](docs/scope.md)
+- [Arquitetura](docs/architecture.md)
+- [Modelo de dados](docs/data-model.md)
+- [Segurança e privacidade](docs/security.md)
+- [CI e verificações](docs/ci.md)
+- [Plano de testes](docs/test-plan.md)
+- [Implantação e operação](docs/deployment.md)
+- [Backlog modular](docs/backlog.md)
+- [Definition of Done](docs/definition-of-done.md)
+- [Decisões](docs/decisions/DECISIONS.md)
+- [Open Finance](docs/open-finance.md)
+- [Checkpoint](docs/checkpoint.md)
 
-## Fluxo
+## Fluxo de trabalho
 
-Cada módulo tem Work Order estável e issue GitHub com objetivo, escopo, dependências, critérios de aceite, testes, entregáveis e stop condition. As PRs devem ser pequenas e vinculadas às issues. Trabalho paralelo começa somente depois dos contratos compartilhados estarem congelados.
+Cada módulo tem Work Order e issue GitHub com dependências, critérios de aceite, testes, entregáveis e stop condition. PRs devem ser pequenas e vinculadas às issues. Trabalho paralelo começa após contratos compartilhados estarem aprovados.
 
-A implementação só começa depois que este planejamento for revisado, as decisões técnicas bloqueadoras forem fechadas e os Work Orders aplicáveis estiverem aprovados.
+## Segurança
 
-## Privacidade
-
-Use somente dados sintéticos em testes. Nunca coloque dados pessoais ou financeiros reais no GitHub, inclusive em issues, prints ou logs.
+Use apenas dados sintéticos em testes. Nunca coloque dados financeiros, bancários ou de carteira reais no GitHub. Não informe seed phrase, chave privada ou senha de carteira ao Finance AI.
