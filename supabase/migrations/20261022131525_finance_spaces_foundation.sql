@@ -27,12 +27,12 @@ language sql
 stable
 security definer
 set search_path = ''
-as $
+as $$
   select exists (
     select 1 from finance_private.authorized_owners
     where owner_id = (select auth.uid())
   )
-$;
+$$;
 revoke all on function public.finance_is_authorized_owner() from public, anon, authenticated;
 grant execute on function public.finance_is_authorized_owner() to authenticated;
 
