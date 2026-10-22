@@ -2,7 +2,7 @@
 
 **Issue:** #6 (`FAI-WO-M04-001`). **Branch:** `feature/fai-m04-debt-register`.
 **Base:** `62d9fd54b0d850376bb4f7ee430e11075be2c54e` (M03 integrado).
-**Status:** migração, UI e teste EVM sintético implementados na PR #20; revalidação final pendente. Sem deploy nem dados reais.
+**Status:** implementação e validação sintética do código com 178 pgTAP concluídas; PR #20 aguardando revalidação do SHA documental definitivo. Sem deploy nem dados reais.
 
 ## Decisões
 
@@ -20,3 +20,7 @@
 - A observação é um *snapshot completo*, não uma alteração parcial. A interface agora apresenta os valores existentes como padrão e exige fonte e data novas para cada registro. O titular pode explicitamente limpar um campo e transformá-lo em desconhecido; a versão anterior continua no histórico append-only.
 - A UI possui limite declarado de 100 credores e 100 observações exibidas por espaço; a tabela retém todo o histórico. Navegação histórica completa e paginação detalhada são melhorias futuras de UX e não são sinônimo de perda dos dados.
 - **Não calcular** custo exato de atraso nem prioridade de pagamento sem base suficiente, períodos consistentes, regra e fonte verificáveis. Campos desconhecidos são NULL.
+
+## Evidence Bundle técnico
+
+No HEAD de implementação `2c53e65e2d5f3eda4ba7444d03e6e81fee8344ca`, o run [Supabase 39856659393](https://github.com/KayzenRoot/finance-ai/actions/runs/39856659393) confirma 178/178 pgTAP e EVM Data API sintética, com restauração aprovada. CI 39856659528, Dependency Review 39856659556, CodeQL JS/TS 39856659471, SonarCloud e Socket Security passaram. A PR só pode ser marcada READY depois dos checks repetidos no commit documental final. Consulte `docs/checkpoint.md` e a descrição da PR #20 para o pacote completo.
