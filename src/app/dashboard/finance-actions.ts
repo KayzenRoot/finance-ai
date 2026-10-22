@@ -81,7 +81,7 @@ export async function recordInternalTransfer(formData: FormData): Promise<void> 
   let cents: string;
   try {
     cents = parseBrlCents(field(formData, "amount_brl"));
-    if (BigInt(cents) <= 0n) finish("invalid-money");
+    if (BigInt(cents) <= BigInt(0)) finish("invalid-money");
   } catch {
     finish("invalid-money");
   }

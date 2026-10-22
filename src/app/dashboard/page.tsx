@@ -27,7 +27,7 @@ const noticeText: Record<string, string> = {
 };
 
 function sumCents(accounts: Balance[]) {
-  return accounts.reduce((sum, account) => sum + BigInt(account.current_balance_cents), 0n);
+  return accounts.reduce((sum, account) => sum + BigInt(account.current_balance_cents), BigInt(0));
 }
 
 export default function DashboardPage({ searchParams }: { searchParams: Promise<Params> }) {
