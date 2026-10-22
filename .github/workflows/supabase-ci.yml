@@ -1,0 +1,118 @@
+name: Supabase migration and wallet security
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  scope:
+    name: Detect Supabase scope
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      run_supabase: ${{ steps.paths.outputs.run_supabase }}
+    steps:
+      - name: Checkout with comparison history
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+      - name: Detect backend-relevant changes
+        id: paths
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if [[ "$EVENT_NAME" != "pull_request" ]]; then
+            echo 'run_supabase=true' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" > "$RUNNER_TEMP/supabase-changed.txt"
+          if grep -Eq '^(supabase/|tests/|package\.json$|package-lock\.json$|src/lib/supabase/|src/lib/auth/|src/components/auth/|src/app/api/|src/app/dashboard/|src/app/login/|proxy\.ts$|\.github/workflows/supabase-ci\.yml$)' "$RUNNER_TEMP/supabase-changed.txt"; then
+            echo 'run_supabase=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'run_supabase=false' >> "$GITHUB_OUTPUT"
+          fi
+  supabase:
+    name: Migration, RLS and synthetic wallet checks
+    needs: scope
+    if: needs.scope.outputs.run_supabase == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Set up Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install and audit
+        run: |
+          npm ci
+          npm audit --audit-level=high
+          npm run test:ci
+      - name: Start local Supabase services
+        id: supabase_start
+        shell: bash
+        run: |
+          set -o pipefail
+          npx supabase start --yes \
+            --exclude realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor \
+            2>&1 | sed '/sb_secret_/d'
+      - name: Apply migrations and run pgTAP
+        run: |
+          npx supabase db reset --local --yes
+          npm run supabase:test
+      - name: Load local public test credentials
+        run: |
+          npx supabase status --output env > "$RUNNER_TEMP/supabase-status.env"
+          set -a
+          source "$RUNNER_TEMP/supabase-status.env"
+          set +a
+          printf 'SUPABASE_URL=%s\nSUPABASE_ANON_KEY=%s\n' "$API_URL" "$ANON_KEY" >> "$GITHUB_ENV"
+      - name: Authenticate synthetic wallets and assert RLS over Data API
+        shell: bash
+        run: |
+          set -euo pipefail
+          container="$(docker ps --format '{{.Names}}' | grep '^supabase_db_' | head -n 1)"
+          test -n "$container"
+          SUPABASE_DB_CONTAINER="$container" npm run test:wallet
+      - name: Rehearse synthetic tenant data export and restore
+        shell: bash
+        run: |
+          set -euo pipefail
+          container="$(docker ps --format '{{.Names}}' | grep '^supabase_db_' | head -n 1)"
+          test -n "$container"
+          npx supabase db reset --local --yes
+          docker exec "$container" psql -U postgres -d postgres -v ON_ERROR_STOP=1 -c \
+            "insert into public.finance_spaces (owner_id, space_type, display_name) values ('90000000-0000-4000-8000-000000000009', 'personal', 'Synthetic restore check')"
+          docker exec "$container" pg_dump -U postgres -d postgres --data-only \
+            --table=public.finance_spaces --column-inserts --no-owner \
+            > "$RUNNER_TEMP/finance-ai-synthetic-backup.sql"
+          npx supabase db reset --local --yes
+          docker exec -i "$container" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            < "$RUNNER_TEMP/finance-ai-synthetic-backup.sql"
+          restored_count="$(docker exec "$container" psql -U postgres -d postgres -tAc \
+            "select count(*) from public.finance_spaces where display_name = 'Synthetic restore check'")"
+          test "$restored_count" = "1"
+      - name: Stop local Supabase services
+        if: always() && steps.supabase_start.outcome == 'success'
+        run: npx supabase stop --no-backup || true

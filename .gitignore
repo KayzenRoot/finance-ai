@@ -1,0 +1,23 @@
+# Dependencies and generated framework output
+node_modules/
+.next/
+/out/
+/build/
+/dist/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+.env.keys
+
+# Local Supabase state
+supabase/.temp/
+
+# OS/editor files
+.DS_Store
+.idea/
+.vscode/

@@ -4,10 +4,6 @@ on:
   pull_request:
     branches:
       - main
-    paths:
-      - '**/package.json'
-      - '**/package-lock.json'
-      - '**/npm-shrinkwrap.json'
 
 permissions:
   contents: read

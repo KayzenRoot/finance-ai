@@ -1,6 +1,6 @@
 # Requisitos
 
-Status: proposta de planejamento em revisão — Work Order FAI-PLAN-001, atualizada com banco Supabase e criptoativos somente leitura.
+Status: requisitos V1; M00 seleciona e prova o caminho de autenticação, enquanto saldos cripto ficam para M11.
 
 ## Funcionais
 
@@ -16,7 +16,7 @@ Status: proposta de planejamento em revisão — Work Order FAI-PLAN-001, atuali
 - REQ-FIN-010 — Permitir consultas em linguagem natural sobre dados armazenados e autorizados.
 - REQ-FIN-011 — Permitir que a IA prepare rascunhos de lançamentos; salvar somente após confirmação explícita do titular.
 - REQ-FIN-012 — Exportar os dados do titular em formato legível e utilizável.
-- REQ-CRYPTO-001 — Oferecer login com carteira por provedor como Privy, se a integração aprovada preservar a autorização Supabase.
+- REQ-CRYPTO-001 — Oferecer login com carteira via Supabase Auth Web3 (SIWE para Ethereum/EVM e SIWS para Solana), preservando autorização do titular e RLS; Privy só se houver necessidade futura comprovada.
 - REQ-CRYPTO-002 — Importar saldos de redes suportadas em modo leitura, com refresh e entrada manual para fontes indisponíveis.
 - REQ-CRYPTO-003 — Mostrar rede, ativo, quantidade, fonte de preço, horário da observação e estado de desatualização.
 - REQ-CRYPTO-004 — Manter criptoativos separados do caixa disponível e não tratá-los como dinheiro pronto para pagar contas.

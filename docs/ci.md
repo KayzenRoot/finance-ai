@@ -1,38 +1,41 @@
 # Pipeline de CI e segurança
 
-Status: configuração inicial proposta na PR FAI-PLAN-001; app de produto ainda sem scaffold. O inventário e as decisões sobre GitHub Apps estão em [github-app-audit.md](github-app-audit.md).
+Status: CI inicial integrado pela PR #1; checks de aplicação e Supabase adicionados no FAI-M00. O inventário e a evidência por integração estão em [github-app-audit.md](github-app-audit.md).
 
 ## Pipeline por PR
 
 | Job | Ação | Custo/velocidade |
 |---|---|---|
 | Markdown | Lint de README e docs | Rápido, sem build de produto |
-| Aplicação | Node 24, cache npm, npm ci/audit, lint, typecheck, test:ci e build | Pula somente até existir package.json; sem matriz |
-| Dependency Review | Bloqueia nova dependência vulnerável HIGH/CRITICAL | Roda só em PR que altera manifest/lockfile |
+| Aplicação | Node 24, cache npm, npm ci/audit, lint, typecheck, test:ci e build | Toda PR; feedback rápido, sem matriz |
+| Supabase | Detector de escopo em toda PR; migração local, pgTAP, login EVM, RLS na Data API e export/restore sintético quando necessário | Detector rápido; job Docker é omitido por `if` em mudanças irrelevantes |
+| Dependency Review | Bloqueia nova dependência vulnerável HIGH/CRITICAL | Job leve em toda PR; sem dependências novas, aprova sem análise pesada |
 | CodeQL Actions | SAST dos workflows | Só quando workflows mudarem |
 | CodeQL JS/TS | SAST de código TypeScript/JavaScript | Só quando código/manifests JS/TS mudarem |
 | Dependabot | Atualizações agrupadas de Actions e npm | Semanal, PRs pequenos |
 | Secret scanning | Detecção nativa do GitHub para repositório público | Ativar/verificar nas configurações |
 
-Jobs independentes rodam em paralelo, cancelam execuções antigas da mesma PR e usam runners padrão. Não há matriz duplicada, E2E em toda alteração trivial, imagem/container ou deploy automático. E2E ampla, banco local Supabase e migrações entram em checks de alto risco/release após o scaffold.
+Jobs independentes rodam em paralelo, cancelam execuções antigas da mesma PR e usam runners padrão. Não há matriz duplicada, E2E em toda alteração trivial ou deploy automático. O detector de escopo do Supabase roda em toda PR. O job Docker/RLS só inicia quando mudam migrações, testes, manifestos, autenticação ou rotas financeiras, incluindo o próprio workflow. Assim checks exigidos permanecem disponíveis mesmo em PRs documentais.
 
 ## Regras
 
 - Workflows usam permissões mínimas e ações externas pinadas em SHA completo.
 - Eventos de PR usam pull_request; não usar pull_request_target para executar código não confiável.
 - CI não recebe secrets de produção e usa somente fixtures sintéticas.
-- O check de aplicação exige lockfile e scripts lint, typecheck, test:ci e build quando package.json passar a existir.
+- O check de aplicação exige lockfile e scripts lint, typecheck, test:ci e build.
 - npm audit bloqueia vulnerabilidades HIGH/CRITICAL na árvore instalada.
-- Dependency Review usa filtro por manifest/lockfile para não gastar runner em PRs de documentação. Requer Dependency Graph habilitado antes do scaffold.
+- Dependency Review executa em toda PR para fornecer um check obrigatório estável; quando nenhum manifesto muda, não há dependência nova a rejeitar. A primeira execução com lockfile falhou porque Dependency Graph estava desativado; após a ativação, o check passou no HEAD `d987599deacf7df35a8dc51ef718a7380e162cd0` (run `39806167328`). Isso não substitui revisão de dependências ou análise de licença.
 - Dependabot agrupa minor/patch para limitar volume; major continua revisão separada.
 - Tornar o repositório privado pode mudar os limites gratuitos de runners/armazenamento; reavaliar antes da mudança.
 - Nenhum workflow publica, faz deploy ou altera dados Supabase.
+- Em auditoria anterior, `main` estava sem proteção; em 22/10/2026 o ruleset #25657724 foi ativado com PR, cinco checks, squash, branch atualizada e bloqueio de force-push/deleção; a exigência de aprovação humana será alterada para zero por decisão do titular. A conexão GitHub verifica essa regra, mas não permite editá-la.
 
 ## Ferramentas e uso nesta fase
 
 - **GitHub Actions:** único provedor obrigatório de CI. Runners padrão são gratuitos e ilimitados enquanto o repositório usar plano público; as condições mudam ao tornar o repositório privado.
 - **CodeQL e secret scanning:** recursos nativos apropriados a repositório público; confirmar status efetivo nas configurações.
-- **Dependency Review e Dependabot:** configurados; Dependency Review ainda não rodou porque o repositório não possui manifestos/lockfiles. Dependabot para npm começa com o manifesto.
+- **Dependency Review e Dependabot:** configuração e workflow presentes. Dependabot está configurado; a primeira execução npm falhou antes do scaffold por não existir `package.json`. O Dependency Review agora passou na PR #16, em `d987599d`, após o Dependency Graph ter sido habilitado.
+- **Socket Security:** o app executou seu check “Project Report” com sucesso após a integração da PR #1. Mantê-lo como sinal auxiliar até definir uma política de bloqueio.
 - **SonarQube Cloud:** app visível na conta e plano OSS disponível para organizações open source. Candidato a check complementar depois de confirmar acesso ao Finance AI, elegibilidade e quality gate; ainda não há execução comprovada.
 - **StepSecurity:** plano Community gratuito para repositórios públicos; candidato a auditoria/hardening de workflow. Não está comprovado como check ativo neste repositório.
 - **Codecov e Chromatic:** avaliar após existirem, respectivamente, relatórios de cobertura e UI/Storybook.
@@ -51,3 +54,22 @@ Jobs independentes rodam em paralelo, cancelam execuções antigas da mesma PR e
 - [StepSecurity pricing](https://www.stepsecurity.io/pricing)
 - [Supabase pricing](https://supabase.com/pricing)
 - [Privy pricing](https://www.privy.io/pricing)
+
+## Status checks que podem ser exigidos em `main`
+
+- Sempre presentes: `Markdown lint`, `Application checks`, `Dependency Review`, `Detect Supabase scope` e `Migration, RLS and synthetic wallet checks` (este último pode ficar **skipped** após detecção de escopo, condição considerada aprovada pelo GitHub).
+- `CodeQL Actions` e `Analyze JavaScript and TypeScript` continuam condicionais ao tipo de alteração; não devem ser adicionados à lista universal de required checks enquanto não houver presença garantida em toda PR. Continuam gates obrigatórios da auditoria quando executados.
+- O detector falha de forma segura se não conseguir comparar o HEAD com a base da PR. Comparação é feita com histórico completo e `git diff --name-only`, sem executar código da PR no contexto privilegiado.
+- Ao configurar um ruleset: exigir PR, branches atualizadas, bloquear force-push e deleção, exigir os cinco checks estáveis e restringir bypass. Não exigir aprovação humana obrigatória na política vigente. Revalidar numa PR apenas documental e numa PR que altere migrações.
+- Ruleset ativo [Finance AI - Main Protection](https://github.com/KayzenRoot/finance-ai/rules/25657724), confirmado por leitura da API GitHub. No último read-back antes da atualização administrativa, ainda exigia 1 aprovação humana; o titular determinou alterá-la para **0**, mantendo os cinco checks. A conexão atual não possui operação administrativa para **editar** regras. `dismiss_stale_reviews_on_push=true` confirmado em segunda leitura após ajuste administrativo. Confirmação de secret scanning e push protection ainda pendente.
+
+## Política atual: desenvolvimento sem aprovação humana obrigatória
+
+Em 22/10/2026, o titular substituiu o fluxo de reviewer fixo por um fluxo de engenharia orientado a evidências: **zero aprovações humanas obrigatórias**, sem solicitar review de `kayzenweb3` ou de outras pessoas. Consultar [política de entrega](review-policy.md).
+
+- Toda mudança continua em branch e PR com rastreabilidade.
+- Os **cinco required checks** continuam obrigatórios; CodeQL e Socket Security são examinados quando disponíveis.
+- O agente corrige falhas demonstradas, revalida o HEAD final, verifica o ruleset e registra um checkpoint objetivo. Nunca declarar SUCCESS sem execução real.
+- Squash merge normal, sem bypass, só após o GitHub aceitar as regras ativas e as restrições do Work Order; nenhuma implantação, gasto, produção ou dado financeiro real está incluído nesta mudança.
+- A exigência de `required_approving_review_count=0` deve ser aplicada manualmente no ruleset por administrador, pois a conexão GitHub não oferece operação de administração. Sem isso o GitHub poderá continuar bloqueando o merge.
+- O workflow `default-pr-reviewer.yml` foi removido da branch M00 porque o proprietário não deseja mais solicitações de revisão humanas automáticas.

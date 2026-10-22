@@ -1,6 +1,6 @@
 # Plano de testes e CI
 
-Status: proposta em revisão — Work Order FAI-PLAN-001. Risco ELEVATED.
+Status: testes-base implementados no FAI-M00; módulos financeiros seguem pendentes. Risco ELEVATED.
 
 ## Verificações em cada PR
 
@@ -9,7 +9,8 @@ O workflow está documentado em [ci.md](ci.md) e .github/workflows/.
 | Check | Quando | Objetivo |
 |---|---|---|
 | Markdown lint | Toda PR e push em main | Evitar documentação inconsistente |
-| Aplicação Node | Toda PR; executa quando package.json existe | npm ci, lint, typecheck, testes e build |
+| Aplicação Node | Toda PR | npm ci, npm audit, lint, typecheck, PGlite e build |
+| Supabase e carteiras | PR que altera migrações, testes, lockfile ou workflow | Migração local, pgTAP, carteiras EVM sintéticas, RLS e restore de teste |
 | Dependency Review | PR | Bloquear vulnerabilidades novas HIGH/CRITICAL |
 | CodeQL Actions | Alteração de workflow | Analisar os workflows do GitHub Actions |
 | CodeQL JS/TS | Alteração de código JS/TS | Análise semântica de segurança |
@@ -23,12 +24,12 @@ Checks independentes rodam em paralelo. Execução antiga da mesma PR é cancela
 - Unitários para dinheiro, datas, taxas, recorrência, projeção e regras de prioridade.
 - Integração para persistência, autorização, transferências, liquidação e idempotência de importação.
 - Testes de RLS com dois titulares sintéticos e tentativas cruzadas de acesso.
-- Contrato para API, autenticação Privy/Supabase e adaptador de IA.
+- Contrato para API, autenticação Web3 nativa/Supabase e adaptador de IA.
 - Interface em celular/computador, acessibilidade básica e estados vazios/erro.
 - Testes do adaptador cripto com endereços sintéticos, balances antigos, provider indisponível e falha de preço.
 - Testes negativos demonstram que não existe endpoint de assinatura/transação.
 - Testes E2E amplos em mudança de fluxo crítico e release, não em cada check trivial.
-- Backup/exportação e restauração comprovados com dados sintéticos.
+- O CI exporta e restaura uma linha sintética do Postgres local. Antes de produção, provar a rotina independente de backup do projeto hospedado.
 
 ## Casos financeiros críticos
 

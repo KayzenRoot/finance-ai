@@ -1,12 +1,14 @@
 # Implantação e operação
 
-Status: ainda não há aplicação ou deploy. A plataforma de hospedagem será decidida depois do scaffold.
+Status: scaffold local e fundação de CI em implementação; não há projeto Supabase de produção nem deploy. A plataforma será decidida em ADR separado.
 
 ## Banco e autenticação
 
-Supabase Postgres está selecionado. O plano Free atual, consultado em 2026-10-22, inclui limites de uso e projetos, pode pausar projeto após uma semana inativo e não oferece backup diário incluído; validar a página de preços novamente antes de armazenar dados reais. O MVP precisa de exportação e backup independente, criptografado e com restauração testada. Se não houver uma estratégia confiável dentro do plano gratuito, não armazenar dados reais até resolver a lacuna.
+Supabase Postgres está selecionado. Conforme a [página de preços](https://supabase.com/pricing) e a [documentação de projetos pausados](https://supabase.com/docs/guides/platform/going-into-prod#paused-projects), Free pode pausar um projeto após uma semana de inatividade e não inclui backups automáticos diários nem PITR. A documentação indica janela de restauração de um ano para projeto pausado; isso não substitui backup. Revalidar limites antes de produção.
 
-Privy é o candidato para login com carteira. Sua integração com Supabase e RLS deve ser provada no M00. Verificar custo, quotas e política de sessão antes de produção. Nunca pedir chave privada ou seed phrase.
+O scaffold usa Supabase Auth Web3 nativo para Ethereum e Solana. A assinatura de mensagem confirma identidade e não habilita transferências. O painel permanece fechado até configurar a identidade do titular no ambiente privado do servidor. Nunca pedir chave privada ou seed phrase.
+
+Antes de inserir dados reais, selecionar armazenamento independente, criptografia, janela de retenção e rotina de exportação, testar restauração isolada e documentar RPO/RTO. O CI ensaia exportação e restauração de uma linha sintética; essa prova não é backup de produção nem rotina agendada.
 
 ## Imagens
 
@@ -20,6 +22,7 @@ A V1 não exige imagem. Cloudinary só será configurado se uma funcionalidade d
 - Migrações versionadas e testadas em banco de desenvolvimento isolado.
 - Logs sem dados financeiros, carteiras ou credenciais detalhadas.
 - Backup independente, retenção definida e restauração ensaiada.
+- Dependabot e alertas de segurança ativos; required checks exigidos em `main`.
 - Exportação e exclusão verificadas.
 - Monitoramento de erros e limites de custo de IA/provedores.
 - Staging apenas com dados sintéticos.
@@ -30,3 +33,16 @@ A V1 não exige imagem. Cloudinary só será configurado se uma funcionalidade d
 ## Operação V1
 
 Sem pagamentos, sincronização bancária automática, assinatura de transação ou automação de decisão financeira. Open Finance exige gate próprio de viabilidade, consentimento, parceiro, segurança, custo e suporte. Reavaliar custos e limites de GitHub Actions antes de tornar privado o repositório.
+
+## Provisionamento seguro do titular (pré-produção)
+
+A migração cria `finance_private.authorized_owners` **vazia**. Não adicionar identificadores reais ao seed, às migrations ou aos exemplos públicos. Depois de configurar um projeto privado, autenticar a carteira do titular e identificar seu UUID no ambiente administrativo privado do Supabase, um administrador autorizado deverá registrar o mesmo UUID na tabela privada e em `FINANCE_AI_OWNER_USER_ID` no servidor da aplicação. Usar uma única identidade ativa; a restrição `singleton` do banco impede cadastrar uma segunda identidade.
+
+Exemplo **somente no SQL Editor privado**, substituindo o valor fictício por um UUID verificado sem copiá-lo para GitHub/CI:
+
+```sql
+insert into finance_private.authorized_owners (owner_id)
+values ('00000000-0000-0000-0000-000000000000');
+```
+
+Validar depois: acesso legítimo pelo servidor e Data API; outro login válido não pode criar seus próprios espaços; exclusão ou revogação deve suspender autorização imediatamente. Um projeto hospedado e backup independente continuam **pendentes**: este procedimento é documentação, não evidência de implantação.
