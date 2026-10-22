@@ -68,7 +68,12 @@ jobs:
           set +a
           printf 'SUPABASE_URL=%s\nSUPABASE_ANON_KEY=%s\n' "$API_URL" "$ANON_KEY" >> "$GITHUB_ENV"
       - name: Authenticate synthetic wallets and assert RLS over Data API
-        run: npm run test:wallet
+        shell: bash
+        run: |
+          set -euo pipefail
+          container="$(docker ps --format '{{.Names}}' | grep '^supabase_db_' | head -n 1)"
+          test -n "$container"
+          SUPABASE_DB_CONTAINER="$container" npm run test:wallet
       - name: Rehearse synthetic tenant data export and restore
         shell: bash
         run: |
