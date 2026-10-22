@@ -10,7 +10,7 @@ type Account={id:string;name:string;archived_at:string|null};
 type Category={id:string;name:string;kind:string;archived_at:string|null};
 type Entry={id:string;account_id:string;category_id:string;kind:string;entry_role:string;
   reverses_entry_id:string|null;amount_cents:string;effective_date:string;description:string};
-type Params={space?:string;notice?:string};
+type Params={space?:string;notice?:string;kind?:string;category?:string;from?:string;to?:string};
 const notes:Record<string,string>={
  "category-created":"Categoria cadastrada.","category-renamed":"Categoria renomeada.",
  "category-archived":"Categoria arquivada.","category-error":"Categoria não alterada.",
@@ -44,22 +44,38 @@ async function LedgerContent({searchParams}:{searchParams:Promise<Params>}){
   <div className="dashboard-card"><h1>Espaços indisponíveis</h1></div></section></main>;
  const space=((spacesRaw??[]) as Space[]).find(x=>x.space_type===type);
  let accounts:Account[]=[],categories:Category[]=[],entries:Entry[]=[],queryError=false;
+ let reversedIds=new Set<string>();
+ const selectedKind=["income","expense"].includes(params.kind??"")?params.kind!:"";
+ const selectedCategory=/^[0-9a-f-]{36}$/i.test(params.category??"")?params.category!:"";
+ const from=/^\d{4}-\d{2}-\d{2}$/.test(params.from??"")?params.from!:"";
+ const to=/^\d{4}-\d{2}-\d{2}$/.test(params.to??"")?params.to!:"";
  if(space){
+  let ledgerQuery=client.from("finance_ledger_entries")
+    .select("id,account_id,category_id,kind,entry_role,reverses_entry_id,amount_cents,effective_date,description")
+    .eq("owner_id",data.user.id).eq("space_id",space.id);
+  if(selectedKind)ledgerQuery=ledgerQuery.eq("kind",selectedKind);
+  if(selectedCategory)ledgerQuery=ledgerQuery.eq("category_id",selectedCategory);
+  if(from)ledgerQuery=ledgerQuery.gte("effective_date",from);
+  if(to)ledgerQuery=ledgerQuery.lte("effective_date",to);
   const [a,c,e]=await Promise.all([
     client.from("finance_accounts").select("id,name,archived_at")
       .eq("owner_id",data.user.id).eq("space_id",space.id).order("name"),
     client.from("finance_categories").select("id,name,kind,archived_at")
       .eq("owner_id",data.user.id).eq("space_id",space.id).order("name"),
-    client.from("finance_ledger_entries")
-      .select("id,account_id,category_id,kind,entry_role,reverses_entry_id,amount_cents,effective_date,description")
-      .eq("owner_id",data.user.id).eq("space_id",space.id)
-      .order("effective_date",{ascending:false}).limit(100)
+    ledgerQuery.order("effective_date",{ascending:false}).order("created_at",{ascending:false}).limit(100)
   ]);
   queryError=Boolean(a.error||c.error||e.error);
   accounts=(a.data??[]) as Account[];categories=(c.data??[]) as Category[];entries=(e.data??[]) as Entry[];
+  const visibleIds=entries.filter(x=>x.entry_role!=="reversal").map(x=>x.id);
+  if(visibleIds.length){
+    const rev=await client.from("finance_ledger_entries").select("reverses_entry_id")
+      .eq("owner_id",data.user.id).eq("space_id",space.id).in("reverses_entry_id",visibleIds);
+    if(rev.error)queryError=true;
+    reversedIds=new Set((rev.data??[]).map(x=>x.reverses_entry_id).filter((x):x is string=>Boolean(x)));
+  }
  }
  const activeAccounts=accounts.filter(x=>!x.archived_at),activeCategories=categories.filter(x=>!x.archived_at);
- const reversedIds=new Set(entries.filter(x=>x.entry_role==="reversal").map(x=>x.reverses_entry_id));
+ // The reversal lookup is unfiltered so date/type filters cannot hide canceled state.
  const accountNames=new Map(accounts.map(x=>[x.id,x.name])),categoryNames=new Map(categories.map(x=>[x.id,x.name]));
  const hidden=<input type="hidden" name="space_type" value={type}/>;
  return <main className="dashboard-shell"><section className="dashboard-main"><div className="finance-workspace">
@@ -113,7 +129,19 @@ async function LedgerContent({searchParams}:{searchParams:Promise<Params>}){
     {categories.length===0&&<p>Sem categorias neste espaço.</p>}
    </section>
    <section className="finance-panel"><h2>Histórico com estornos</h2>
-    <p>Até 100 eventos recentes; nenhuma correção ou cancelamento apaga o registro original.</p>
+    <p>Até 100 eventos por consulta. Filtragem ocorre no Supabase e não altera o ledger.</p>
+    <form className="finance-form" method="get" action="/dashboard/ledger">
+     <input type="hidden" name="space" value={type}/>
+     <label>Tipo<select name="kind" defaultValue={selectedKind}>
+      <option value="">Todos</option><option value="income">Receitas</option><option value="expense">Despesas</option>
+     </select></label>
+     <label>Categoria<select name="category" defaultValue={selectedCategory}>
+      <option value="">Todas</option>{categories.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
+     </select></label>
+     <label>De<input type="date" name="from" defaultValue={from}/></label>
+     <label>Até<input type="date" name="to" defaultValue={to}/></label>
+     <button type="submit" className="button button-primary">Aplicar filtros</button>
+    </form>
     {entries.map(e=>{
      const active=e.entry_role!=="reversal"&&!reversedIds.has(e.id);
      const allowed=activeCategories.filter(c=>c.kind===e.kind);
