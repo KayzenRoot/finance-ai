@@ -1,6 +1,6 @@
 # Checkpoint
 
-Status: FAI-PLAN-001 integrado à main. FAI-WO-M00-001 na PR #16, com Audit Delta 01 para bloquear carteiras autenticadas não autorizadas diretamente no RLS. Todos os cinco workflows da revisão d987599d passaram, incluindo Dependency Review, migrações, RLS, carteira Web3 sintética e restauração sintética. Esta é uma proposta de Checkpoint Delta; M00 não foi APPROVED/merged e M01–M11 seguem bloqueados.
+Status: FAI-PLAN-001 integrado à main. FAI-WO-M00-001 na PR #16, com Audit Delta 01 para bloquear carteiras autenticadas não autorizadas diretamente no RLS. Todos os cinco workflows no commit funcional `b6c5a84cfd823c8402eac27273fe442f724db0c7` passaram, incluindo Dependency Review, migrações, RLS, RPC de autorização, carteira Web3 sintética e restauração sintética. Commits documentais subsequentes requerem revalidação do HEAD final. Esta é uma proposta de Checkpoint Delta; M00 não foi APPROVED/merged e M01–M11 seguem bloqueados.
 
 ## Baseline
 
@@ -44,3 +44,12 @@ Status: FAI-PLAN-001 integrado à main. FAI-WO-M00-001 na PR #16, com Audit Delt
 ## Próximo gate
 
 FAI-M00: auditar a [PR #16](https://github.com/KayzenRoot/finance-ai/pull/16) no HEAD mais recente e a proteção de titular único recém-implementada. A `main` segue sem branch protection ou required checks; revisão, configuração e comprovação são gates pendentes para merge. A fundação não recebe dados reais até autorização, ambiente privado e backup independente com restauração ensaiada. M01–M11 seguem bloqueados até APPROVED do M00 e dos contratos compartilhados.
+
+## Delta proposto de auditoria (não promovido)
+
+- Segurança: uma carteira Web3 autenticada não obtém espaço financeiro até provisionamento administrativo; RLS exige titular único e vínculo de proprietário. Função pública sem argumento apenas informa autorização da própria sessão.
+- Evidências no commit `b6c5a84cfd823c8402eac27273fe442f724db0c7`: [CI 39807369421](https://github.com/KayzenRoot/finance-ai/actions/runs/39807369421), [CodeQL Actions 39807369743](https://github.com/KayzenRoot/finance-ai/actions/runs/39807369743), [CodeQL JS/TS 39807369454](https://github.com/KayzenRoot/finance-ai/actions/runs/39807369454), [Dependency Review 39807369600](https://github.com/KayzenRoot/finance-ai/actions/runs/39807369600), [Supabase 39807369464](https://github.com/KayzenRoot/finance-ai/actions/runs/39807369464). Ambos checks Socket Security passaram.
+- Contratos e ameaça inicial: `docs/contracts-m00.md` e `docs/threat-model-m00.md`, criados na mesma branch para auditoria. Ainda não são contratos aprovados na `main`.
+- Bloqueios administrativos comprovados: `main.protected=false`, rulesets vazios, checks não exigidos; revisão Copilot não substantiva (quota). `kayzenweb3` tem permissão `read`, insuficiente como comprovante de aprovação independente com requisito de write.
+- Pendências: revisar o HEAD final, confirmar configurações de secret scanning/push protection e required checks, obter revisão independente elegível e auditar tests/diff. Projeto hospedado, dados reais e deploy continuam proibidos.
+- **Veredito nesta branch:** BLOCKED para merge e M01, mesmo com CI verde; manter PR e issue abertas. Não promover o checkpoint até auditoria final e aprovação.
