@@ -21,7 +21,7 @@ function finish(v:FormData,notice:string):never{
 }
 function money(x:string):string|null{
  if(!x)return null;
- const cents=parseBrlCents(x);if(BigInt(cents)<0n)throw Error("negative");
+ const cents=parseBrlCents(x);if(BigInt(cents)<BigInt(0))throw Error("negative");
  return cents;
 }
 function percent(x:string):string|null{
@@ -29,7 +29,7 @@ function percent(x:string):string|null{
  const s=x.replace(",",".");
  if(!/^\d{1,5}(\.\d{1,8})?$/.test(s))throw Error("rate format");
  const [whole,frac=""]=s.split(".");
- if(BigInt(whole)*100000000n+BigInt(frac.padEnd(8,"0"))>1000000000000n)throw Error("rate too high");
+ if(BigInt(whole)*10000000BigInt(0)+BigInt(frac.padEnd(8,"0"))>100000000000BigInt(0))throw Error("rate too high");
  return s;
 }
 function terms(v:FormData,key:string){
