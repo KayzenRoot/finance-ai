@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { formatBrlCents } from "@/lib/finance/money.mjs";
@@ -21,7 +22,14 @@ const notes:Record<string,string>={
  "denied":"Acesso a espaço não autorizado."
 };
 function formCents(raw:string){const c=BigInt(raw);return (c/BigInt(100)).toString()+","+(c%BigInt(100)).toString().padStart(2,"0");}
-export default async function LedgerPage({searchParams}:{searchParams:Promise<Params>}){
+export default function LedgerPage({searchParams}:{searchParams:Promise<Params>}){
+ return <Suspense fallback={<main className="dashboard-shell"><section className="dashboard-main">
+   <div className="dashboard-card" role="status">Validando sua sessão e o livro financeiro…</div>
+ </section></main>}>
+   <LedgerContent searchParams={searchParams}/>
+ </Suspense>;
+}
+async function LedgerContent({searchParams}:{searchParams:Promise<Params>}){
  const params=await searchParams,type=params.space==="store"?"store":"personal";
  const client=await createClient();if(!client)redirect("/login");
  const {data,error}=await client.auth.getUser();
