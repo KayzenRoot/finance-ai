@@ -60,6 +60,7 @@ select throws_ok(
   $$insert into public.finance_spaces (owner_id, space_type, display_name)
     values ('20000000-0000-4000-8000-000000000002', 'personal', 'Outro titular')$$,
   '42501',
+  'new row violates row-level security policy for table "finance_spaces"',
   'owner cannot create a space for another user'
 );
 select throws_ok(
@@ -67,6 +68,7 @@ select throws_ok(
     set owner_id = '20000000-0000-4000-8000-000000000002'
     where owner_id = '10000000-0000-4000-8000-000000000001'$$,
   '42501',
+  'new row violates row-level security policy for table "finance_spaces"',
   'owner cannot transfer a space to another user'
 );
 
@@ -78,22 +80,24 @@ select is(
   0,
   'another user cannot read the first owner space'
 );
+with changed as (
+  update public.finance_spaces
+  set display_name = 'alterado'
+  where owner_id = '10000000-0000-4000-8000-000000000001'
+  returning 1
+)
 select is(
-  (with changed as (
-    update public.finance_spaces
-    set display_name = 'alterado'
-    where owner_id = '10000000-0000-4000-8000-000000000001'
-    returning 1
-  ) select count(*)::integer from changed),
+  (select count(*)::integer from changed),
   0,
   'another user cannot update the first owner space'
 );
+with removed as (
+  delete from public.finance_spaces
+  where owner_id = '10000000-0000-4000-8000-000000000001'
+  returning 1
+)
 select is(
-  (with removed as (
-    delete from public.finance_spaces
-    where owner_id = '10000000-0000-4000-8000-000000000001'
-    returning 1
-  ) select count(*)::integer from removed),
+  (select count(*)::integer from removed),
   0,
   'another user cannot delete the first owner space'
 );
