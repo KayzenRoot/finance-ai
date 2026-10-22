@@ -255,3 +255,22 @@ select a.id as account_id,a.owner_id,a.space_id,a.account_type,a.name,
 from public.finance_accounts a;
 revoke all on public.finance_account_balances from public,anon,authenticated;
 grant select on public.finance_account_balances to authenticated;
+
+-- M02 adds audit events that make M01 reference balances and dates immutable.
+-- Otherwise changing a reference value via Data API could silently rewrite history.
+create function public.finance_ledger_reference_guard()
+returns trigger language plpgsql security definer set search_path = '' as $$
+begin
+  if (new.opening_balance_cents is distinct from old.opening_balance_cents
+      or new.opening_balance_date is distinct from old.opening_balance_date)
+    and exists (select 1 from public.finance_ledger_entries l
+                 where l.account_id=old.id and l.owner_id=old.owner_id) then
+    raise exception 'Account reference balance is frozen after ledger activity'
+      using errcode='23514';
+  end if;
+  return new;
+end;
+$$;
+create trigger finance_accounts_m02_reference_guard
+before update on public.finance_accounts for each row
+execute function public.finance_ledger_reference_guard();

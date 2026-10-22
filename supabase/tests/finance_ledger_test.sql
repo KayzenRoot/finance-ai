@@ -1,7 +1,7 @@
--- FAI-M02 pgTAP: 35 isolated synthetic checks, no real funds.
+-- FAI-M02 pgTAP: 37 isolated synthetic checks, no real funds.
 begin;
 -- All fixture identifiers and balances are synthetic. The transaction rolls back.
-select plan(35);
+select plan(37);
 select has_table('public','finance_categories','M02 categories table exists');
 
 select has_table('public','finance_ledger_entries','M02 immutable entries table exists');
@@ -48,6 +48,17 @@ select throws_ok($$update public.finance_categories set kind='expense' where id=
 
 select is(public.finance_record_entry('81000000-0000-4000-8000-000000000081',
  '91000000-0000-4000-8000-000000000091','income',3000,current_date,'Synthetic income') is not null,true,'record exact income via RPC');
+
+
+select throws_ok($$update public.finance_accounts set opening_balance_cents=9999
+  where id='81000000-0000-4000-8000-000000000081'$$,
+ '23514','Account reference balance is frozen after ledger activity',
+ 'ledger income freezes reference balance against historical rewrite');
+
+select throws_ok($$update public.finance_accounts set opening_balance_date=current_date-1
+  where id='81000000-0000-4000-8000-000000000081'$$,
+ '23514','Account reference balance is frozen after ledger activity',
+ 'ledger income freezes reference date against historical rewrite');
 
 select set_config('finance_ai.m02_income',(select id::text from public.finance_ledger_entries
  where description='Synthetic income' and entry_role='original'),true);

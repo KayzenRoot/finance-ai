@@ -19,3 +19,7 @@ Testes pgTAP e smoke Data API sintéticos devem provar: IDOR e RLS para todos os
 ## Interface M02 (proposta em PR #18)
 
 A rota `/dashboard/ledger?space=personal|store` exige sessão Web3, titular único e RPC de allowlist. Consultas de conta, categoria e lançamentos são filtradas no Supabase por `owner_id` e `space_id`, além de RLS. Server Actions cadastram/renomeiam/arquivam categorias, criam entrada ou saída, estornam e corrigem via RPC; a UI não permite mutação SQL direta do ledger. Histórico limitado a 100 eventos na V1, incluindo estornos e substituições, sem pretensão de relatórios completos. O módulo ainda precisa validar CI e smoke da Data API M02, sem dados reais ou deploy.
+
+## Invariante adicional de saldo de referência
+
+Depois do primeiro evento de receita/despesa associado à conta, `opening_balance_cents` e `opening_balance_date` ficam imutáveis por trigger na M02. Sem esse bloqueio, uma alteração direta da Data API permitiria mudar retrospectivamente o saldo sem uma correção auditável. O trigger também preserva renomear/arquivar contas. Dois testes pgTAP e um teste REST sintético exercitam a tentativa bloqueada. Total pgTAP esperado passa a **86 (21 M00 + 28 M01 + 37 M02)** e depende de novo PASS no HEAD final. Nenhum dado real foi usado.

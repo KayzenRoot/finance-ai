@@ -312,6 +312,14 @@ const { data: incomeEntry, error: incomeEntryError } = await first.client
   });
 assert.equal(incomeEntryError, null);
 assert.match(incomeEntry, /^[0-9a-f-]{36}$/i);
+
+const {data: changedReference, error: changedReferenceError} = await first.client
+  .from("finance_accounts")
+  .update({opening_balance_cents:"999"})
+  .eq("id",personalAccount.id).select("id");
+assert.ok(changedReferenceError, "reference cannot be rewritten after M02 ledger entry");
+assert.equal(changedReference,null);
+
 const { data: expenseEntry, error: expenseEntryError } = await first.client
   .rpc("finance_record_entry", {
     p_account_id: storeAccount.id, p_category_id: expenseCategory.id,

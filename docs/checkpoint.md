@@ -4,7 +4,7 @@
 
 - **M00 integrado** via PR #16, squash SHA `04797f1d058b5a37586383b60a5a3e6dc4037926`, após 10/10 checks SUCCESS. Issue #2 fechada.
 - **Ruleset** #25657724: `main` protegida, `required_approving_review_count=0`, cinco checks exigidos, squash, histórico linear, branch up-to-date, sem force push, deleção ou bypass.
-- **M01**: Issue #3, PR #17 (DRAFT) e branch `feature/fai-m01-spaces-accounts-transfers`. Implementados espaços Pessoal/Loja, contas, renomeação/arquivamento, transferências internas via RPC, BigInt/BRL em centavos, views `security_invoker`, RLS e Data API testada. HEAD de código `f4096b1fc886877bde781e9fcc8c978381ab13a3`: CI, Dependency Review, CodeQL JS/TS, Socket Security e Supabase SUCCESS; 49/49 pgTAP + smoke EVM/Data API e restore sintéticos passaram. Integração à main não realizada.
+- **M01 integrado**: PR #17 squash-merged na `main` protegida `2fcdb5bf21ddb5f3293585a554f56525d34d2bd7`, issue #3 closed; 49/49 pgTAP e gates de segurança aprovados no HEAD da PR.
 - **Evidência de banco**: run [39831779921](https://github.com/KayzenRoot/finance-ai/actions/runs/39831779921), migração/RLS/Web3 e restauração sintéticas SUCCESS. Testes M00/M01 verificados; sem projeto privado de produção, pagamentos ou dados reais.
 - **Produção separada**: secret scanning/push protection ainda precisam de confirmação administrativa, bem como backup independente, implantação e testes de carteira real. O histórico abaixo inclui bloqueios anteriores já resolvidos; o estado acima prevalece.
 
@@ -14,7 +14,7 @@
 - Branch principal: main.
 - Baseline inicial: 7f6997f8e5797e43f2cc8c1b282998112cb09265.
 - Branch de planejamento: planning/FAI-PLAN-001-source-pack.
-- HEAD integrado na `main`: `04797f1d058b5a37586383b60a5a3e6dc4037926`.
+- HEAD integrado na `main`: `2fcdb5bf21ddb5f3293585a554f56525d34d2bd7` (M01, PR #17).
 - Branch local de implementação: `feature/fai-m00-secure-foundation`.
 - Código de produto: scaffold Next.js 16/Supabase SSR na PR #16, incluindo correção de titular único. Consulte o HEAD atual da PR para evitar referência obsoleta.
 - Projeto Supabase hospedado para Finance AI: ainda não criado.
@@ -118,3 +118,7 @@ A PR #17 foi integrada por squash normal na main `2fcdb5bf21ddb5f3293585a554f565
 - M02 delivered: categories by owner/space/type; RLS-protected immutable ledger, exact BRL cents, balance view with neutral internal transfers; SSR interface to create/rename/archive categories, post/correct/cancel entries and filter history by kind, category and date. Filtered history uses a separate reversal lookup to avoid displaying canceled entries as active.
 - Findings corrected: non-namespaced pgTAP variables; Next.js protected route requiring Suspense under cache components.
 - This document update creates a new HEAD requiring its own checks. Before final promotion validate HEAD, five required checks, CodeQL, Socket Security, and ruleset. No M02 merge, deploy, spending, real financial data, or M03.
+
+### M02 — Correção de integridade pré-READY
+
+Auditoria identificou risco de reescrita silenciosa do saldo/data inicial de conta após lançamentos do M02, sem transferências M01. Adicionado `finance_ledger_reference_guard` para bloquear alterações de `opening_balance_cents` e `opening_balance_date` após existir evento de ledger, preservando renomeação/arquivamento. Acrescentados **2 testes pgTAP** e um negativo EVM REST. Meta: **86 pgTAP** (21+28+37), além da smoke Data API, exigindo novos checks. Bundle anterior no SHA `057acb69c8baf82daa204ef9b031c419f7602d2b`: Supabase [39841322596](https://github.com/KayzenRoot/finance-ai/actions/runs/39841322596) SUCCESS, 84/84, smoke PASS, restore sintético PASS; CI [39841322559](https://github.com/KayzenRoot/finance-ai/actions/runs/39841322559), Dependency [39841322616](https://github.com/KayzenRoot/finance-ai/actions/runs/39841322616), CodeQL JS/TS [39841322554](https://github.com/KayzenRoot/finance-ai/actions/runs/39841322554), SonarCloud e Socket PASS. O job Markdown lint concluiu etapas com sucesso mas status agregado ainda estava IN_PROGRESS na última consulta. **Não utilizar o bundle anterior como PASS no novo commit.** M02 sem merge/deploy/gastos/dados reais; PR DRAFT até todos gates do novo HEAD verdes.
