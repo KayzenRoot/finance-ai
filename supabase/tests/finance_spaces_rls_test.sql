@@ -10,10 +10,22 @@ select ok(
   (select relforcerowsecurity from pg_class where oid = 'public.finance_spaces'::regclass),
   'row level security also applies to the table owner'
 );
-select has_policy('public', 'finance_spaces', 'finance_spaces_select_own', 'owner select policy exists');
-select has_policy('public', 'finance_spaces', 'finance_spaces_insert_own', 'owner insert policy exists');
-select has_policy('public', 'finance_spaces', 'finance_spaces_update_own', 'owner update policy exists');
-select has_policy('public', 'finance_spaces', 'finance_spaces_delete_own', 'owner delete policy exists');
+select ok(
+  exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'finance_spaces' and policyname = 'finance_spaces_select_own'),
+  'owner select policy exists'
+);
+select ok(
+  exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'finance_spaces' and policyname = 'finance_spaces_insert_own'),
+  'owner insert policy exists'
+);
+select ok(
+  exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'finance_spaces' and policyname = 'finance_spaces_update_own'),
+  'owner update policy exists'
+);
+select ok(
+  exists (select 1 from pg_policies where schemaname = 'public' and tablename = 'finance_spaces' and policyname = 'finance_spaces_delete_own'),
+  'owner delete policy exists'
+);
 select ok(
   has_table_privilege('authenticated', 'public.finance_spaces', 'SELECT')
     and has_table_privilege('authenticated', 'public.finance_spaces', 'INSERT')

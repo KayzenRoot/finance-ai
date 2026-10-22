@@ -50,9 +50,12 @@ jobs:
           npm run test:ci
       - name: Start local Supabase services
         id: supabase_start
-        run: >-
-          npx supabase start --yes
-          --exclude realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+        shell: bash
+        run: |
+          set -o pipefail
+          npx supabase start --yes \
+            --exclude realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor \
+            2>&1 | sed '/sb_secret_/d'
       - name: Apply migrations and run pgTAP
         run: |
           npx supabase db reset --local --yes
