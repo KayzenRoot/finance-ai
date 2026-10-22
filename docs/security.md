@@ -8,7 +8,7 @@ Saldos, transações, credores, renda, endereços de carteira associados ao titu
 
 ## Controles obrigatórios
 
-- Autenticação forte e sessão segura; fluxo final depende do ADR do FAI-M00.
+- Sessão Supabase SSR com renovação via `getClaims()`; dashboard exige a allowlist `FINANCE_AI_OWNER_USER_ID` no servidor.
 - Supabase RLS habilitado em todas as tabelas expostas e políticas que autorizem titular e espaço no banco.
 - Testes contra IDOR/BOLA alterando IDs do cliente; não confiar somente em filtros da API ou UI.
 - Não usar user_metadata editável pelo usuário para autorização.
@@ -19,7 +19,7 @@ Saldos, transações, credores, renda, endereços de carteira associados ao titu
 - Auditoria sem valores completos, credenciais ou descrições sensíveis.
 - Threat model e resposta a incidente definidos antes de produção.
 - Repositório público e CI não recebem saldo real, extrato, endereço de carteira de produção, token ou seed phrase.
-- Carteira é somente leitura. Uma assinatura curta pode ser usada apenas como desafio de autenticação, sem autorização de transação.
+- Carteira é somente leitura. A assinatura Web3 de login pode ser usada apenas como desafio de autenticação, sem autorização de transação.
 - Nunca solicitar, armazenar ou registrar seed phrase, chave privada ou senha de carteira.
 - Logs e erros não guardam tokens, cabeçalhos de autorização ou dados financeiros brutos.
 - Dependências e GitHub Actions usam SHAs completos; Dependabot mantém referências atualizadas.

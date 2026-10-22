@@ -1,6 +1,6 @@
 # Escopo
 
-Status: proposta de planejamento em revisão — Work Order FAI-PLAN-001.
+Status: direção V1 aprovada; a base técnica FAI-M00 está em implementação.
 
 ## V1 — incluído
 
@@ -15,7 +15,7 @@ Status: proposta de planejamento em revisão — Work Order FAI-PLAN-001.
 9. Assistente explicativo e rascunhos confirmáveis.
 10. Importação CSV com prévia/deduplicação e exportação.
 11. Banco Supabase Postgres com migrações e Row Level Security.
-12. Login com carteira e criptoativos somente leitura via Privy ou provedor compatível, condicionado à validação de identidade/RLS do FAI-M00.
+12. Login com carteira via Supabase Auth Web3; snapshots de criptoativos somente leitura ficam no M11.
 13. Segurança, trilha de auditoria, exportação, backup/recuperação e validação de release.
 14. CI rápido em PRs com qualidade, testes da aplicação quando criada, Dependency Review e CodeQL.
 
@@ -39,7 +39,7 @@ Status: proposta de planejamento em revisão — Work Order FAI-PLAN-001.
 ## Condições de entrada
 
 - Revisar Source Pack e decisões.
-- Fechar ADRs de framework, autenticação, IA e custos no FAI-M00.
-- Provar o caminho Privy/Supabase e testes de RLS antes de dados financeiros.
+- Fechar ADRs de framework e autenticação no FAI-M00; LLM e hospedagem ficam para incrementos que precisem deles.
+- Provar autenticação nativa Supabase, autorização do titular e RLS antes de dados financeiros.
 - Aprovar contratos compartilhados e Work Orders aplicáveis.
 - Manter política de dados sintéticos e plano de backup independente.

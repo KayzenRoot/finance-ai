@@ -63,7 +63,6 @@ jobs:
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
           NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_placeholder
-          NEXT_PUBLIC_PRIVY_APP_ID: test_only_placeholder
         run: |
           test -f package-lock.json || { echo "Commit package-lock.json before enabling npm CI."; exit 1; }
           npm ci

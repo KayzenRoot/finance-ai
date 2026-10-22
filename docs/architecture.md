@@ -1,6 +1,6 @@
 # Arquitetura
 
-Status: proposta atualizada pela direção do titular em 2026-10-22; decisões de stack e identidade serão fechadas no FAI-M00 antes da aplicação.
+Status: FAI-M00 fecha Next.js 16, TypeScript, Node.js 24, npm e Supabase Auth Web3 nativo. O escopo financeiro continua fora desta fundação.
 
 ## Componentes
 
@@ -8,19 +8,21 @@ Status: proposta atualizada pela direção do titular em 2026-10-22; decisões d
 2. API autenticada no servidor para autorização, validação, auditoria e acesso ao domínio.
 3. Domínio determinístico para saldos, lançamentos, projeções, custos de atraso e cenários de pagamento.
 4. Supabase Postgres como sistema de registro escolhido; migrações versionadas e RLS em toda tabela exposta.
-5. Adaptador de autenticação que avalia Supabase Auth e Privy para login com carteira; uma identidade verificada precisa mapear para o titular da aplicação e preservar RLS.
+5. Supabase Auth Web3 para SIWE (Ethereum/EVM) e SIWS (Solana); um gate de titular no servidor e RLS autorizam os dados.
 6. Adaptador cripto de somente leitura para endereços autorizados, snapshots de saldos e fonte/horário de preço.
 7. Adaptador LLM isolado; recebe apenas contexto mínimo e resultados estruturados do domínio.
 8. CI em GitHub Actions; o deploy permanece fora do escopo até uma decisão posterior.
 
 ## Direção de stack
 
-A proposta para avaliação do M00 é Next.js, TypeScript, Node LTS e npm, com Supabase. Esta combinação permite entregar uma aplicação web responsiva e manter autenticação, validação e integrações sensíveis no servidor. O FAI-M00 registrará ADR e poderá ajustar essa proposta antes do scaffold.
+A fundação usa Next.js 16, TypeScript, Node.js 24 e npm, com `@supabase/ssr` e Supabase Auth. O Proxy do Next atualiza sessões via `getClaims()`; páginas do servidor validam claims e a allowlist do titular. A aplicação pode rodar sem configuração de backend para facilitar o scaffold, mas não libera acesso financeiro.
 
 ## Identidade, carteira e dados
 
 - Supabase é o banco selecionado.
-- Privy é o candidato solicitado para autenticação via carteira; validar SIWE/SIWS, renovação de sessão, vinculação de identidade e integração Supabase/RLS antes de produção.
+- Supabase Auth Web3 nativo é o caminho escolhido para a primeira versão: suporta SIWE para Ethereum e SIWS para Solana e entrega a sessão diretamente ao Supabase. O teste de carteira sintética valida a identidade retornada e o RLS por usuário. Privy fica como alternativa futura se surgir requisito que o fluxo nativo não atenda.
+- Uma assinatura de autenticação comprova posse da carteira naquele desafio; ela não autoriza transação, troca, pagamento ou movimentação de fundos.
+- `FINANCE_AI_OWNER_USER_ID` limita a aplicação a uma identidade explicitamente autorizada. Configure a variável somente no servidor depois de validar o identificador do titular em ambiente privado.
 - Endereço público de carteira vinculado ao titular é dado sensível no contexto do produto.
 - O sistema nunca recebe seed phrase ou chave privada e não cria uma autorização para transferir cripto.
 - Saldos cripto são snapshots com rede, ativo, quantidade, valor de referência, fonte e horário.

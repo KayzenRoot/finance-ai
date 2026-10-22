@@ -1,12 +1,14 @@
 # Auditoria dos GitHub Apps
 
-Status: inventário visual concluído; configuração por repositório ainda não comprovada. Work Order FAI-PLAN-001, Audit Delta 01. Data: 2026-10-22.
+Status: inventário visual concluído; Source Pack integrado pela PR #1. Checks e limites de configuração revalidados em 2026-10-22 para o M00.
 
 ## Método e limites
 
 O inventário foi transcrito das capturas da página de GitHub Apps instalados na conta pessoal KayzenRoot. A presença do botão `Configure` e do nome do app comprova que ele aparece na lista da conta, mas não revela a seleção de repositórios, as permissões efetivas, o plano, nem se o serviço executa no Finance AI.
 
-No último HEAD com verificações completas antes desta atualização documental, o HEAD de referência foi `3790b2af8adeff75b86fa7fa100d192c572fad02`. CI #9 (run `39779199648`) passou no Markdown lint e no gate de scaffold; a configuração de Node e os comandos npm de lint, typecheck, testes e build foram pulados porque ainda não existe `package.json`. CodeQL Actions #9 (run `39779199600`) passou. Dependency Review não foi acionado porque não houve alteração de manifesto/lockfile. Isso comprova somente GitHub Actions/CodeQL no Finance AI; não comprova execução dos demais apps.
+Na PR #1, CI #12 (run `39783505384`) e CodeQL Actions #12 (run `39783505477`) passaram. Após o merge, CI (run `39783841804`), CodeQL Actions (run `39783841695`), Dependabot config (run `119841761656`) e Socket Security “Project Report” (run `119841716398`) passaram em `main`. O run npm do Dependabot (run `39783878739`) falhou por falta de `package.json`; o scaffold agora adiciona o manifesto/lockfile. Essa evidência comprova esses apps no repositório; não comprova outros apps da lista.
+
+A branch `main` foi observada `protected:false`, sem required checks. A integração GitHub disponível não tem permissão administrativa para alterar regras de proteção. Secret scanning e push protection devem ser conferidos no Settings; não afirmar que estão ativos até confirmação.
 
 ## Solicitações de permissões
 

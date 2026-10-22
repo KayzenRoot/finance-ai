@@ -4,13 +4,15 @@ Assistente financeiro privado para organizar finanças pessoais e da loja, proje
 
 ## Estado
 
-Planejamento e fundação de CI em revisão pela PR FAI-PLAN-001. Ainda não há aplicação, dados de produto, banco de produção ou deploy. O repositório é público: dados financeiros, endereços de carteira associados ao titular, credenciais, segredos e identificadores pessoais não podem entrar em commits, issues, exemplos, fixtures ou logs.
+Planejamento e CI inicial integrados à `main` pela PR #1. A fundação do produto está sendo preparada na issue [FAI-M00 #2](https://github.com/KayzenRoot/finance-ai/issues/2); ainda não há banco de produção, dados financeiros ou deploy. O repositório é público: dados financeiros, endereços de carteira associados ao titular, credenciais, segredos e identificadores pessoais não podem entrar em commits, issues, exemplos, fixtures ou logs.
 
 ## Direção da V1
 
 - Espaços Pessoal e Loja separados, contas, lançamentos, obrigações, recebíveis, dívidas, projeções e prioridades explicáveis.
-- Supabase Postgres como banco selecionado; RLS e políticas por titular são obrigatórios.
-- Login com carteira usando Privy é uma meta, condicionada a provar a integração com Supabase e RLS. Carteiras e criptoativos serão somente leitura.
+- Supabase Postgres como banco selecionado; tabelas expostas usam permissões explícitas e RLS por titular.
+- A fundação usa Supabase Auth Web3 nativo para Ethereum (SIWE) e Solana (SIWS). A assinatura serve somente para autenticação; Privy fica adiado enquanto essa opção atende à V1.
+- O acesso ao espaço Finance AI requer ainda uma allowlist de titular no servidor (`FINANCE_AI_OWNER_USER_ID`); carteira autenticada não significa autorização automática.
+- Carteiras e criptoativos serão somente leitura. Não há assinatura de transação ou movimentação de fundos.
 - Valores de cripto ficam separados de caixa disponível para pagar contas.
 - IA explica cálculos determinísticos e pode preparar rascunhos que exigem confirmação.
 - Sem Open Finance, assinatura de transações, pagamentos ou movimentação automática na V1.
@@ -18,8 +20,9 @@ Planejamento e fundação de CI em revisão pela PR FAI-PLAN-001. Ainda não há
 
 ## Engenharia
 
+- Stack de aplicação: Next.js 16, TypeScript, Node.js 24 e npm; Supabase SSR para sessões seguras.
 - CI: [docs/ci.md](docs/ci.md)
-- Workflows: GitHub Actions para lint, testes da aplicação quando houver scaffold, Dependency Review e CodeQL.
+- Workflows: GitHub Actions para lint, typecheck, testes, build, `npm audit`, Dependency Review e CodeQL; um workflow seletivo de Supabase executa migrações, pgTAP, carteiras sintéticas e exportação/restauração de teste.
 - Dependabot agrupa atualizações semanais de Actions e npm.
 - SonarQube Cloud será integrado se a instalação no repositório e o plano OSS gratuito forem confirmados.
 - Plataforma de deploy será decidida depois; nenhum deploy está configurado.
@@ -48,3 +51,17 @@ Cada módulo tem Work Order e issue GitHub com dependências, critérios de acei
 ## Segurança
 
 Use apenas dados sintéticos em testes. Nunca coloque dados financeiros, bancários ou de carteira reais no GitHub. Não informe seed phrase, chave privada ou senha de carteira ao Finance AI.
+
+## Desenvolvimento local
+
+Requer Node.js 24, npm e Docker se quiser executar o Supabase local.
+
+```sh
+npm ci
+cp .env.example .env.local
+npx supabase start
+npx supabase status
+npm run dev
+```
+
+Preencha em `.env.local` a URL e a chave pública/anon exibidas pelo Supabase local. Para acesso autorizado ao dashboard, configure `FINANCE_AI_OWNER_USER_ID` somente no ambiente do servidor. Rode `npm run lint`, `npm run typecheck`, `npm run test:ci` e `npm run build` para validar a fundação. `npm run test:wallet` e `npm run supabase:test` dependem do Supabase local ativo.
