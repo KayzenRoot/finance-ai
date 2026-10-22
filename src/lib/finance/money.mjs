@@ -4,7 +4,7 @@ const LIMIT_CENTS = 9000000000000000n;
 /** @param {string} raw @returns {string} Exact signed cent amount. */
 export function parseBrlCents(raw) {
   if (typeof raw !== "string") throw new TypeError("Amount must be text.");
-  const match = /^(-?)(0|[1-9]\d{0,12})(?:[,.](\d{1,2}))?$/.exec(raw.trim());
+  const match = /^(-?)(0|[1-9]\d{0,13})(?:[,.](\d{1,2}))?$/.exec(raw.trim());
   if (!match) throw new RangeError("Enter BRL as 1234,56 (no thousand separators).");
   const cents = (BigInt(match[2]) * 100n + BigInt((match[3] ?? "").padEnd(2, "0") || "0")) * (match[1] ? -1n : 1n);
   if (cents < -LIMIT_CENTS || cents > LIMIT_CENTS) throw new RangeError("BRL exceeds supported limit.");
