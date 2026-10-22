@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { createClient } from "@/lib/supabase/server";
 import { formatBrlCents } from "@/lib/finance/money.mjs";
-import { archiveAccount, createAccount, createSpace, recordInternalTransfer } from "./finance-actions";
+import { archiveAccount, createAccount, createSpace, recordInternalTransfer, renameAccount } from "./finance-actions";
 
 type Space = { id: string; owner_id: string; space_type: string; display_name: string };
 type Balance = { account_id: string; owner_id: string; space_id: string; account_type: string; name: string; opening_balance_date: string; opening_balance_cents: string | number; current_balance_cents: string | number; archived_at: string | null };
@@ -15,6 +15,8 @@ const labels: Record<string, string> = { bank: "Banco", cash: "Dinheiro em caixa
 const noticeText: Record<string, string> = {
   "space-created": "Espaço criado.",
   "account-created": "Conta cadastrada.",
+  "account-renamed": "Conta renomeada.",
+  "rename-error": "Não foi possível renomear a conta.",
   "account-archived": "Conta arquivada.",
   "transfer-created": "Transferência interna registrada (nenhum dinheiro foi movimentado).",
   "invalid": "Confira os dados informados.",
@@ -119,6 +121,15 @@ async function DashboardContent({ searchParams }: { searchParams: Promise<Params
             <div className="finance-account" key={account.account_id}>
               <div><strong>{account.name}</strong><small>{labels[account.account_type] ?? account.account_type} · Referência em {account.opening_balance_date}{account.archived_at ? " · Arquivada" : ""}</small></div>
               <div className="finance-account-right"><strong>{formatBrlCents(account.current_balance_cents)}</strong>
+                {!account.archived_at && <details className="finance-rename">
+                  <summary>Renomear</summary>
+                  <form action={renameAccount}>
+                    <input type="hidden" name="account_id" value={account.account_id}/>
+                    <label htmlFor={`rename-${account.account_id}`} className="sr-only">Novo nome da conta</label>
+                    <input id={`rename-${account.account_id}`} name="name" type="text" maxLength={80} minLength={1} defaultValue={account.name} required/>
+                    <button type="submit" className="finance-link">Salvar nome</button>
+                  </form>
+                </details>}
                 {!account.archived_at && <form action={archiveAccount}><input type="hidden" name="account_id" value={account.account_id}/><button className="finance-link" type="submit">Arquivar</button></form>}
               </div>
             </div>)}</div>}

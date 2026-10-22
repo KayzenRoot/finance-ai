@@ -63,6 +63,18 @@ export async function createAccount(formData: FormData): Promise<void> {
   finish(error ? "account-error" : "account-created");
 }
 
+export async function renameAccount(formData: FormData): Promise<void> {
+  const { client, ownerId } = await requireFinanceOwner();
+  const id = field(formData, "account_id");
+  const name = field(formData, "name");
+  if (!isUuid(id) || !name || name.length > 80) finish("invalid");
+  const { data, error } = await client.from("finance_accounts")
+    .update({ name })
+    .eq("id", id).eq("owner_id", ownerId).is("archived_at", null)
+    .select("id").maybeSingle();
+  finish(error || !data ? "rename-error" : "account-renamed");
+}
+
 export async function archiveAccount(formData: FormData): Promise<void> {
   const { client, ownerId } = await requireFinanceOwner();
   const id = field(formData, "account_id");

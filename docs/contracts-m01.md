@@ -28,3 +28,7 @@ A coluna `current_balance_cents` da view retorna **texto decimal exato**, não J
 - HEAD `176a48227ae2d14895ee93f27a5334d313b064d2`: workflows CI [39831779899](https://github.com/KayzenRoot/finance-ai/actions/runs/39831779899), CodeQL JS/TS [39831779906](https://github.com/KayzenRoot/finance-ai/actions/runs/39831779906), Dependency Review [39831779878](https://github.com/KayzenRoot/finance-ai/actions/runs/39831779878) e Supabase [39831779921](https://github.com/KayzenRoot/finance-ai/actions/runs/39831779921) concluídos SUCCESS.
 - Supabase pgTAP inclui 21 testes M00 e 28 M01 em dados sintéticos. Revisar log para contagem exata do run antes da promoção; nenhuma simulação foi chamada de teste real com usuário financeiro.
 - M01 deve permanecer PR até evidência de checks obrigatórios no HEAD final e auditoria objetiva, sem review humano exigido.
+
+## Validação de contrato na Data API (M01)
+
+A smoke test `tests/auth/web3-smoke.mjs` agora verifica acesso via Supabase REST com duas carteiras EVM **efêmeras e sintéticas**: criação de contas em espaços Pessoal/Loja, autorização por titular, tentativa de conta forjada, consulta segregada com `security_invoker`, proibição de INSERT direto em transferências, registro válido via RPC, duas pernas de soma zero e revogação de leitura após remoção da allowlist. CI de Supabase deve comprovar sucesso antes da promoção. A interface também permite renomear conta ativa com uma Server Action que revalida sessão, allowlist e owner_id; arquivamento preserva o histórico. Nenhum banco real é acessado.
