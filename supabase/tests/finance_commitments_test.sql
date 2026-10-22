@@ -1,6 +1,8 @@
 -- FAI-M03 pgTAP synthetic-only commitments and recurrence, no external payments.
 begin;
-select plan(43);
+select plan(52);
+select has_view('public','finance_commitment_summary','RLS-safe full commitment summary exists');
+
 select has_table('public','finance_commitments','commitments table exists');
 
 select has_table('public','finance_recurring_plans','recurring plans table exists');
@@ -14,6 +16,8 @@ select ok((select relrowsecurity and relforcerowsecurity from pg_class where oid
 select ok(not has_table_privilege('authenticated','public.finance_commitments','INSERT') and not has_table_privilege('authenticated','public.finance_commitments','UPDATE'),'direct commitment mutations blocked');
 
 select ok(not has_table_privilege('authenticated','public.finance_commitment_settlements','INSERT'),'direct settlement insertion blocked');
+
+select ok(not has_table_privilege('anon','public.finance_commitment_summary','SELECT'),'anonymous aggregated forecast denied');
 
 select ok(not has_table_privilege('anon','public.finance_commitment_forecast','SELECT'),'anonymous forecast denied');
 
@@ -69,6 +73,10 @@ select is((select count(*)::integer from public.finance_commitment_forecast),2,'
 
 select is((select confidence_percent from public.finance_commitment_forecast where kind='receivable'),35,'uncertain confidence preserved');
 
+select is((select open_amount_cents from public.finance_commitment_summary where kind='payable'),'250','summary includes open payables only');
+
+select is((select open_amount_cents from public.finance_commitment_summary where kind='receivable'),'750','summary includes uncertain receivables without adding cash');
+
 select is((select projected_signed_cents from public.finance_commitment_forecast where kind='payable'),'-250','payable cash effect negative');
 
 select throws_ok($$select public.finance_settle_commitment(
@@ -88,6 +96,8 @@ select ok(public.finance_settle_commitment(current_setting('finance_ai.m03_payab
 select is((select current_balance_cents::numeric from public.finance_account_balances where account_id='c1000000-0000-4000-8000-0000000000c1'),9750::numeric,'one payable decreases confirmed amount once');
 
 select is((select count(*)::integer from public.finance_commitment_settlements),1,'exactly one settlement link');
+
+select is((select count(*)::integer from public.finance_commitment_summary where kind='payable'),0,'settled payables disappear from aggregate');
 
 select is((select count(*)::integer from public.finance_commitment_forecast),1,'settled payable removed from forecast');
 
@@ -114,6 +124,8 @@ select is((select count(*)::integer from public.finance_ledger_entries),1,'block
 select ok(public.finance_cancel_commitment(current_setting('finance_ai.m03_receivable')::uuid) is not null,
  'cancel open receivable without ledger entry');
 
+select is((select count(*)::integer from public.finance_commitment_summary),0,'canceled and settled items excluded from totals');
+
 select is((select count(*)::integer from public.finance_commitment_forecast),0,'canceled receivable not projected');
 
 select is((select current_balance_cents::numeric from public.finance_account_balances where account_id='c1000000-0000-4000-8000-0000000000c1'),9750::numeric,'cancel future receivable does not change confirmed balance');
@@ -133,6 +145,8 @@ select is(public.finance_generate_commitments('e1000000-0000-4000-8000-000000000
 select is(public.finance_generate_commitments('e1000000-0000-4000-8000-0000000000e1',date '2026-03-31'),0,
  'same horizon generation idempotent');
 
+select is((select open_amount_cents from public.finance_commitment_summary where kind='payable'),'2400','recurring series summed beyond individual rows');
+
 select is((select count(*)::integer from public.finance_commitments where series_id='e1000000-0000-4000-8000-0000000000e1'),3,'recurrences unique by date');
 
 select ok(exists(select 1 from public.finance_commitments where due_date=date '2026-02-28' and series_id='e1000000-0000-4000-8000-0000000000e1'),'month-end recurrence clamped');
@@ -144,6 +158,8 @@ select throws_ok($$select public.finance_generate_commitments(
 reset role;
 set local role authenticated;
 select set_config('request.jwt.claim.sub','a2000000-0000-4000-8000-0000000000a2',true);
+
+select is((select count(*)::integer from public.finance_commitment_summary),0,'foreign wallet cannot read aggregated forecast');
 
 select is((select count(*)::integer from public.finance_commitments),0,'other wallet sees no commitments');
 
@@ -163,6 +179,8 @@ set local role authenticated;
 select set_config('request.jwt.claim.sub','a1000000-0000-4000-8000-0000000000a1',true);
 
 select is((select count(*)::integer from public.finance_commitments),0,'revoked owner loses commitments');
+
+select is((select count(*)::integer from public.finance_commitment_summary),0,'revoked owner cannot read totals');
 
 select is((select count(*)::integer from public.finance_commitment_forecast),0,'revoked owner loses forecast');
 

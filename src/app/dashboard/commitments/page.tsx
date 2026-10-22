@@ -9,7 +9,7 @@ type Account={id:string;name:string;archived_at:string|null};
 type Category={id:string;name:string;kind:string;archived_at:string|null};
 type Obligation={id:string;kind:string;description:string;due_date:string;amount_cents:string;confidence_percent:number;status:string;series_id:string|null};
 type Plan={id:string;description:string;kind:string;frequency:string;first_due_date:string};
-type Params={space?:string;notice?:string};
+type Params={space?:string;notice?:string;status?:string};
 const messages:Record<string,string>={
  created:"Compromisso registrado como previsão, sem alterar o saldo.",
  canceled:"Compromisso cancelado sem movimentar dinheiro.",
@@ -44,25 +44,34 @@ async function CommitmentContent({searchParams}:{searchParams:Promise<Params>}){
  <div className="dashboard-card"><h1>Não foi possível obter os espaços</h1></div></section></main>;
  const space=((spacesRaw??[]) as Space[]).find(s=>s.space_type===selected);
  let obligations:Obligation[]=[],plans:Plan[]=[],accounts:Account[]=[],categories:Category[]=[],failed=false;
+ let pendingOut=BigInt(0),pendingIn=BigInt(0);
+ const statusFilter=["open","settled","canceled"].includes(params.status??"")?params.status!:"";
  if(space){
- const [a,b,c,d]=await Promise.all([
-  client.from("finance_commitments").select("id,kind,description,due_date,amount_cents,confidence_percent,status,series_id")
-   .eq("owner_id",data.user.id).eq("space_id",space.id).order("due_date").limit(100),
+ let obligationQuery=client.from("finance_commitments")
+  .select("id,kind,description,due_date,amount_cents,confidence_percent,status,series_id")
+  .eq("owner_id",data.user.id).eq("space_id",space.id);
+ if(statusFilter)obligationQuery=obligationQuery.eq("status",statusFilter);
+ const [a,b,c,d,summary]=await Promise.all([
+  obligationQuery.order("due_date").limit(100),
   client.from("finance_recurring_plans").select("id,kind,description,frequency,first_due_date")
    .eq("owner_id",data.user.id).eq("space_id",space.id).order("created_at",{ascending:false}).limit(30),
   client.from("finance_accounts").select("id,name,archived_at")
    .eq("owner_id",data.user.id).eq("space_id",space.id),
   client.from("finance_categories").select("id,name,kind,archived_at")
    .eq("owner_id",data.user.id).eq("space_id",space.id),
+  client.from("finance_commitment_summary").select("kind,open_amount_cents")
+   .eq("owner_id",data.user.id).eq("space_id",space.id),
  ]);
- failed=Boolean(a.error||b.error||c.error||d.error);
+ failed=Boolean(a.error||b.error||c.error||d.error||summary.error);
+ if(!summary.error){
+  pendingOut=BigInt(summary.data?.find(x=>x.kind==="payable")?.open_amount_cents??"0");
+  pendingIn=BigInt(summary.data?.find(x=>x.kind==="receivable")?.open_amount_cents??"0");
+ }
  obligations=(a.data??[]) as Obligation[];plans=(b.data??[]) as Plan[];
  accounts=(c.data??[]) as Account[];categories=(d.data??[]) as Category[];
  }
  const activeAccounts=accounts.filter(a=>!a.archived_at),activeCats=categories.filter(c=>!c.archived_at);
- const open=obligations.filter(o=>o.status==="open");
- const pendingOut=open.filter(o=>o.kind==="payable").reduce((a,o)=>a+BigInt(o.amount_cents),BigInt(0));
- const pendingIn=open.filter(o=>o.kind==="receivable").reduce((a,o)=>a+BigInt(o.amount_cents),BigInt(0));
+ // Summary is calculated from every open commitment in the database, not this 100-row page.
  const hidden=<><input type="hidden" name="space_type" value={selected}/>{space&&<input type="hidden" name="space_id" value={space.id}/>}</>;
  return <main className="dashboard-shell"><section className="dashboard-main"><div className="finance-workspace">
   <header><p className="eyebrow">FINANCE AI · M03</p><h1>Contas a pagar e receber</h1>
@@ -110,7 +119,16 @@ async function CommitmentContent({searchParams}:{searchParams:Promise<Params>}){
    {plans.length===0&&<p>Não há planos recorrentes cadastrados.</p>}
   </section>
   <section className="finance-panel"><h2>Agenda de compromissos</h2>
-   <p>Máximo de 100 registros por página. Liquidação é apenas confirmação manual, sem Pix/boleto.</p>
+   <p>Até 100 compromissos por consulta. Os totais acima cobrem todos os compromissos abertos, independentemente da listagem.</p>
+   <form method="get" action="/dashboard/commitments" className="finance-form">
+    <input type="hidden" name="space" value={selected}/>
+    <label>Situação<select name="status" defaultValue={statusFilter}>
+     <option value="">Todas</option><option value="open">Em aberto</option>
+     <option value="settled">Liquidadas</option><option value="canceled">Canceladas</option>
+    </select></label>
+    <button type="submit" className="button button-primary">Filtrar agenda</button>
+   </form>
+   <p>Liquidação é uma confirmação manual de valor integral. Nenhum Pix ou boleto é enviado.</p>
    {obligations.map(item=><div key={item.id} className="finance-account">
     <div><strong>{item.description}</strong><small>{item.due_date} · {item.kind==="payable"?"A pagar":"A receber"} ·
       Confiança {item.confidence_percent}% · {item.status==="open"?"Em aberto":item.status==="settled"?"Liquidado":"Cancelado"}

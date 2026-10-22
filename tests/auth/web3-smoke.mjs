@@ -393,6 +393,16 @@ const {data: receivable, error: receivableError} = await first.client
   });
 assert.equal(receivableError,null);
 assert.ok(receivable);
+const {data: fullForecastSummary,error:fullForecastSummaryError}=await first.client
+  .from("finance_commitment_summary").select("kind,open_amount_cents");
+assert.equal(fullForecastSummaryError,null);
+assert.equal(fullForecastSummary.find(x=>x.kind==="payable")?.open_amount_cents,"125");
+assert.equal(fullForecastSummary.find(x=>x.kind==="receivable")?.open_amount_cents,"260");
+const {data: foreignSummary,error:foreignSummaryError}=await second.client
+  .from("finance_commitment_summary").select("kind");
+assert.equal(foreignSummaryError,null);
+assert.deepEqual(foreignSummary,[]);
+
 const {data: forecasts, error: forecastsError} = await first.client
   .from("finance_commitment_forecast").select("id,kind,confidence_percent,projected_signed_cents");
 assert.equal(forecastsError,null);
@@ -436,6 +446,12 @@ const {data: rollbackSettlement,error:rollbackSettlementError}=await first.clien
   .rpc("finance_cancel_entry",{p_entry_id:ledgerSettlement});
 assert.ok(rollbackSettlementError,"M02 reversal cannot invalidate a settled M03 commitment");
 assert.equal(rollbackSettlement,null);
+const {data: summaryAfterSettlement,error:summaryAfterSettlementError}=await first.client
+  .from("finance_commitment_summary").select("kind,open_amount_cents");
+assert.equal(summaryAfterSettlementError,null);
+assert.deepEqual(summaryAfterSettlement,[{kind:"receivable",open_amount_cents:"260"}],
+  "settled payable no longer contributes to projected totals");
+
 const {data: balanceAfterSettlement,error:balanceAfterSettlementError}=await first.client
   .from("finance_account_balances").select("current_balance_cents");
 assert.equal(balanceAfterSettlementError,null);

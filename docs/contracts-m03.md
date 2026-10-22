@@ -15,4 +15,8 @@ Work Order `FAI-WO-M03-001`, issue #5. Base canônica M02 integrada: `96edc40dfa
 
 RPCs são `SECURITY DEFINER` com `search_path` vazio, `auth.uid()`, `finance_is_authorized_owner()` e checagens de espaço. Data API não recebe permissão de UPDATE/DELETE nos compromissos nem de INSERT na tabela de liquidações. FKs vinculam owner/space, e RLS forte restringe todas as leituras.
 
-A primeira fatia entrega esquema, RPCs, pgTAP e contrato; **ainda falta** UI para cadastro/recorrência, mudança de status, liquidação confirmada e smoke REST específica. Proibir pagamentos externos, Pix/boleto, dados reais, credenciais e deploy. Validar CI, CodeQL, SonarCloud, Socket e cinco required checks no HEAD final.
+A UI protegida `/dashboard/commitments` já fornece cadastro de pagáveis/recebíveis, planos recorrentes, geração idempotente, cancelamento e liquidação manual, com filtro da agenda por status e separação visual de previsão/caixa. A smoke EVM Data API M03 exercita criação, leitura segregada, vínculo de liquidação 1:1 e a impossibilidade de reverter separadamente lançamentos quitados. Proibir pagamentos externos, Pix/boleto, dados reais, credenciais e deploy. Validar gates no HEAD final antes de READY.
+
+### Totais completos sem truncamento
+
+**Finding P1 corrigido:** o painel original somava somente as primeiras 100 linhas da agenda, podendo ocultar compromissos adicionais. Agora a view `finance_commitment_summary` com `security_invoker=true` agrega **todos** os compromissos `open` por proprietário/espaço/tipo em `numeric` exato e serializa `open_amount_cents` como texto, sob RLS. O limite de 100 linhas aplica-se somente à lista, jamais aos totais. O resumo não modifica `finance_account_balances`, e um recebível de baixa confiança continua apenas projetado. Foram adicionados 9 testes pgTAP e verificações REST sintéticas. Total esperado: **138 pgTAP (21+28+37+52)**, até ser comprovado no CI.

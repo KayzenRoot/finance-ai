@@ -249,3 +249,14 @@ create view public.finance_commitment_forecast with (security_invoker=true) as
  from public.finance_commitments where status='open';
 revoke all on public.finance_commitment_forecast from public,anon,authenticated;
 grant select on public.finance_commitment_forecast to authenticated;
+
+-- Aggregate the entire open set on the server, not the first N UI rows.
+-- Aggregate inherits per-owner RLS via SECURITY INVOKER.
+create view public.finance_commitment_summary with (security_invoker=true) as
+ select owner_id,space_id,kind,
+   sum(amount_cents::numeric)::text as open_amount_cents,
+   count(*)::text as open_count
+ from public.finance_commitments where status='open'
+ group by owner_id,space_id,kind;
+revoke all on public.finance_commitment_summary from public,anon,authenticated;
+grant select on public.finance_commitment_summary to authenticated;
