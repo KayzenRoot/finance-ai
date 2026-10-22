@@ -153,6 +153,121 @@ const { data: stillOwned, error: ownerReadError } = await first.client
 assert.equal(ownerReadError, null);
 assert.equal(stillOwned?.length, 1);
 
+// M01 Data API contract: exercise the same RLS and immutable transfer ledger
+// through authenticated Supabase REST calls, not only privileged pgTAP SQL.
+const { data: storeSpace, error: storeInsertError } = await first.client
+  .from("finance_spaces")
+  .insert({ owner_id: first.userId, space_type: "store", display_name: "Synthetic store" })
+  .select("id")
+  .single();
+assert.equal(storeInsertError, null);
+assert.ok(storeSpace?.id);
+
+const { data: personalAccount, error: personalAccountError } = await first.client
+  .from("finance_accounts")
+  .insert({
+    owner_id: first.userId, space_id: firstSpace.id,
+    account_type: "bank", name: "Synthetic personal bank",
+    opening_balance_cents: "10001", opening_balance_date: "2026-01-01",
+  })
+  .select("id")
+  .single();
+assert.equal(personalAccountError, null);
+assert.ok(personalAccount?.id);
+
+const { data: storeAccount, error: storeAccountError } = await first.client
+  .from("finance_accounts")
+  .insert({
+    owner_id: first.userId, space_id: storeSpace.id,
+    account_type: "cash", name: "Synthetic store cash",
+    opening_balance_cents: "5001", opening_balance_date: "2026-01-01",
+  })
+  .select("id")
+  .single();
+assert.equal(storeAccountError, null);
+assert.ok(storeAccount?.id);
+
+const { data: forgedAccount, error: forgedAccountError } = await second.client
+  .from("finance_accounts")
+  .insert({
+    owner_id: first.userId, space_id: firstSpace.id,
+    account_type: "bank", name: "Forbidden foreign account",
+    opening_balance_cents: "1", opening_balance_date: "2026-01-01",
+  }).select("id");
+assert.ok(forgedAccountError, "unauthorized wallet must not create accounts in another person's space");
+assert.equal(forgedAccount, null);
+
+const { data: foreignAccounts, error: foreignAccountsError } = await second.client
+  .from("finance_account_balances")
+  .select("account_id");
+assert.equal(foreignAccountsError, null);
+assert.deepEqual(foreignAccounts, [], "RLS applies through the security_invoker balance view");
+
+const { data: scopedPersonal, error: scopedPersonalError } = await first.client
+  .from("finance_account_balances")
+  .select("account_id,current_balance_cents")
+  .eq("space_id", firstSpace.id);
+assert.equal(scopedPersonalError, null);
+assert.equal(scopedPersonal?.length, 1);
+assert.equal(scopedPersonal[0].account_id, personalAccount.id);
+assert.equal(scopedPersonal[0].current_balance_cents, "10001", "exact cent totals are serialized as text");
+
+const { data: directTransfer, error: directTransferError } = await first.client
+  .from("finance_transfers")
+  .insert({
+    owner_id: first.userId,
+    from_account_id: personalAccount.id,
+    to_account_id: storeAccount.id,
+    amount_cents: "251", effective_date: "2026-02-01",
+  }).select("id");
+assert.ok(directTransferError, "authenticated clients must not directly insert transfer ledger entries");
+assert.equal(directTransfer, null);
+
+const { data: recordedTransfer, error: recordedTransferError } = await first.client
+  .rpc("finance_record_transfer", {
+    p_from_account_id: personalAccount.id,
+    p_to_account_id: storeAccount.id,
+    p_amount_cents: "251",
+    p_effective_date: "2026-02-01",
+  });
+assert.equal(recordedTransferError, null);
+assert.match(recordedTransfer, /^[0-9a-f-]{36}$/i);
+
+const { data: transferLegs, error: transferLegsError } = await first.client
+  .from("finance_transfer_legs")
+  .select("transfer_id,account_id,signed_amount_cents")
+  .eq("transfer_id", recordedTransfer);
+assert.equal(transferLegsError, null);
+assert.equal(transferLegs?.length, 2, "every transfer must have a debit and credit");
+assert.equal(transferLegs.reduce((sum, leg) => sum + BigInt(leg.signed_amount_cents), 0n), 0n);
+
+const { data: personalAfter, error: personalAfterError } = await first.client
+  .from("finance_account_balances")
+  .select("current_balance_cents")
+  .eq("account_id", personalAccount.id).single();
+const { data: storeAfter, error: storeAfterError } = await first.client
+  .from("finance_account_balances")
+  .select("current_balance_cents")
+  .eq("account_id", storeAccount.id).single();
+assert.equal(personalAfterError, null);
+assert.equal(storeAfterError, null);
+assert.equal(personalAfter.current_balance_cents, "9750");
+assert.equal(storeAfter.current_balance_cents, "5252");
+assert.equal(BigInt(personalAfter.current_balance_cents) + BigInt(storeAfter.current_balance_cents), 15002n);
+
+const { data: foreignTransfers, error: foreignTransfersError } = await second.client
+  .from("finance_transfers").select("id");
+assert.equal(foreignTransfersError, null);
+assert.deepEqual(foreignTransfers, [], "other wallets cannot see internal ledger data");
+
+const { data: foreignRpc, error: foreignRpcError } = await second.client
+  .rpc("finance_record_transfer", {
+    p_from_account_id: personalAccount.id, p_to_account_id: storeAccount.id,
+    p_amount_cents: "1", p_effective_date: "2026-02-01",
+  });
+assert.ok(foreignRpcError, "unauthorized wallet must not transfer the owner's funds even internally");
+assert.equal(foreignRpc, null);
+
 revokeSyntheticOwner(first.userId);
 const { data: afterRevocation, error: afterRevocationError } = await first.client.rpc("finance_is_authorized_owner");
 assert.equal(afterRevocationError, null);
@@ -164,6 +279,16 @@ const { data: revokedRows, error: revokedReadError } = await first.client
 assert.equal(revokedReadError, null);
 assert.deepEqual(revokedRows, []);
 
+const { data: revokedAccounts, error: revokedAccountsError } = await first.client
+  .from("finance_account_balances").select("account_id");
+assert.equal(revokedAccountsError, null);
+assert.deepEqual(revokedAccounts, [], "revocation blocks account-view access through Data API");
+const { data: revokedTransfers, error: revokedTransfersError } = await first.client
+  .from("finance_transfers").select("id");
+assert.equal(revokedTransfersError, null);
+assert.deepEqual(revokedTransfers, [], "revocation blocks historical transfer reads");
+
+
 await first.client.auth.signOut();
 await second.client.auth.signOut();
-console.log("Synthetic EVM sign-in and finance-space RLS checks passed.");
+console.log("Synthetic EVM login, M00/M01 Data API RLS, cross-space transfer neutrality and revocation checks passed.");

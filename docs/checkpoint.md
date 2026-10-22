@@ -1,6 +1,12 @@
 # Checkpoint
 
-Status: FAI-PLAN-001 integrado à main. Política vigente (22/10/2026): zero aprovações humanas obrigatórias; CI/segurança continuam exigidos. FAI-WO-M00-001 na PR #16, com Audit Delta 01 para bloquear carteiras autenticadas não autorizadas diretamente no RLS. O HEAD auditado `b8ea1ce006020b0d4d325277bc0f15ea6ca87ff4` passou todos os dez checks, incluindo os cinco obrigatórios e Supabase/pgTAP (21 testes), RPC de autorização, carteira Web3 sintética e restauração sintética. Commits subsequentes requerem revalidação do novo HEAD. Esta é uma proposta de Checkpoint Delta; M00 não foi APPROVED/merged e M01–M11 seguem bloqueados.
+## Estado canônico atual — 22/10/2026
+
+- **M00 integrado** via PR #16, squash SHA `04797f1d058b5a37586383b60a5a3e6dc4037926`, após 10/10 checks SUCCESS. Issue #2 fechada.
+- **Ruleset** #25657724: `main` protegida, `required_approving_review_count=0`, cinco checks exigidos, squash, histórico linear, branch up-to-date, sem force push, deleção ou bypass.
+- **M01**: Issue #3, PR #17 (DRAFT) e branch `feature/fai-m01-spaces-accounts-transfers`. Implementados espaços Pessoal/Loja, contas, renomeação/arquivamento, transferências internas via RPC, BigInt/BRL em centavos, views `security_invoker`, RLS e Data API testada. HEAD de código `f4096b1fc886877bde781e9fcc8c978381ab13a3`: CI, Dependency Review, CodeQL JS/TS, Socket Security e Supabase SUCCESS; 49/49 pgTAP + smoke EVM/Data API e restore sintéticos passaram. Integração à main não realizada.
+- **Evidência de banco**: run [39831779921](https://github.com/KayzenRoot/finance-ai/actions/runs/39831779921), migração/RLS/Web3 e restauração sintéticas SUCCESS. Testes M00/M01 verificados; sem projeto privado de produção, pagamentos ou dados reais.
+- **Produção separada**: secret scanning/push protection ainda precisam de confirmação administrativa, bem como backup independente, implantação e testes de carteira real. O histórico abaixo inclui bloqueios anteriores já resolvidos; o estado acima prevalece.
 
 ## Baseline
 
@@ -8,7 +14,7 @@ Status: FAI-PLAN-001 integrado à main. Política vigente (22/10/2026): zero apr
 - Branch principal: main.
 - Baseline inicial: 7f6997f8e5797e43f2cc8c1b282998112cb09265.
 - Branch de planejamento: planning/FAI-PLAN-001-source-pack.
-- HEAD integrado na `main`: `08f3cc45f64e889f00900cadfb409910607875ef`.
+- HEAD integrado na `main`: `04797f1d058b5a37586383b60a5a3e6dc4037926`.
 - Branch local de implementação: `feature/fai-m00-secure-foundation`.
 - Código de produto: scaffold Next.js 16/Supabase SSR na PR #16, incluindo correção de titular único. Consulte o HEAD atual da PR para evitar referência obsoleta.
 - Projeto Supabase hospedado para Finance AI: ainda não criado.
@@ -78,3 +84,21 @@ Em segunda consulta ao ruleset #25657724, foi confirmado `dismiss_stale_reviews_
 **Política vigente, substituindo os requisitos humanos dos Deltas históricos:** o titular decidiu **0 approvals** no ruleset `Finance AI - Main Protection`, preservando PR, required checks e segurança. Não exigir `kayzenweb3` nem outra pessoa como reviewer; o workflow de solicitação automática foi retirado da PR #16. A conexão ao GitHub **não permite modificar o ruleset**, então `required_approving_review_count=0` só é efetivo após confirmação via API da alteração do administrador. No momento da primeira consulta deste delta, a regra ainda exigia `1`.
 
 A PR #16 permanece aberta na branch `feature/fai-m00-secure-foundation`; conferir novo HEAD e checks após este commit. O critério para encerramento técnico do M00 é a evidência objetiva de migração/RLS, CI e Sonar/CodeQL se aplicáveis, registro da decisão de risco e aceitação de squash merge normal pelo GitHub sem bypass. Recursos de produção, secret scanning/push protection e backups reais são verificações de pré-produção; **não bloquear a escrita do M01 por ausência de infraestrutura de produção**. Dados reais e deploy permanecem proibidos até gates específicos.
+
+### M01 — Delta proposto (não promovido)
+
+A fundação M00 foi integrada por squash normal na PR #16, `main=04797f1d058b5a37586383b60a5a3e6dc4037926`, com 10/10 checks SUCCESS. O GitHub confirmou `required_approving_review_count=0` e 5 required checks. O M01 inicia em `feature/fai-m01-spaces-accounts-transfers` a partir dessa base. Primeira fatia: contas vinculadas por FK composta aos espaços Pessoal/Loja; transferências internas imutáveis via RPC e views security_invoker de saldos/legs; testes pgTAP sintéticos e contrato M01. Até os checks do HEAD e toda a UI estarem validados, M01 permanece IN PROGRESS, sem deploy, dados reais nem integração à main.
+
+### M01 — Delta de reforço REST e manutenção (proposto, 22/10/2026)
+
+Na PR #17 foram incluídos testes end-to-end **na Data API Supabase local** em `tests/auth/web3-smoke.mjs`, sem dados reais: dono/space, conta de outro titular bloqueada, view `security_invoker`, inserção direta de transferências bloqueada, duas pernas internas de soma zero, revogação e precisão em centavos. Incluída opção de renomear conta ativa no dashboard mediante Server Action autenticada e RLS. A versão de código imediatamente anterior `bd24e14485f8befafd12abc319ee56d15c54875c` teve required checks SUCCESS e Supabase 49/49 pgTAP; **estes testes REST novos não estão cobertos pelo bundle anterior**. Após esta mudança, revalidar o HEAD integral e registrar runs concretos. PR fica DRAFT e M01 não integrado até comprovar critérios de aceitação; sem deploy, gastos, dados reais ou revisão humana obrigatória.
+
+### M01 — Evidence Bundle confirmado no HEAD de código f4096b1f (22/10/2026)
+
+- **Base** `04797f1d058b5a37586383b60a5a3e6dc4037926`; **HEAD de código validado** `f4096b1fc886877bde781e9fcc8c978381ab13a3`. Integração à main: **não realizada**, PR #17 mantida DRAFT.
+- **CI / aplicação** [39833918956](https://github.com/KayzenRoot/finance-ai/actions/runs/39833918956): SUCCESS (Markdown lint, ESLint, typecheck, test:ci, build, npm audit).
+- **Supabase/RLS/Web3** [39833918885](https://github.com/KayzenRoot/finance-ai/actions/runs/39833918885): SUCCESS; `Files=2, Tests=49, Result: PASS` (pgTAP M00=21, M01=28). Smoke API EVM sintética comprova contas Pessoal/Loja, tentativa de conta forjada bloqueada, RLS invoker, INSERT de transferência direto negado, RPC de transferência válida com soma zero, leitura estrangeira/revogação negadas. Export/restauração sintética concluída.
+- **Supply chain** [39833919180](https://github.com/KayzenRoot/finance-ai/actions/runs/39833919180): Dependency Review SUCCESS; **CodeQL JS/TS** [39833918868](https://github.com/KayzenRoot/finance-ai/actions/runs/39833918868) SUCCESS; **Socket Security** Pull Request Alerts/Project Report SUCCESS. Check agregado de code-scanning foi `neutral` e não é required, o job CodeQL JS/TS passou.
+- **Proteção main**: ruleset #25657724 ativo, 0 aprovações humanas obrigatórias e 5 required checks, todos SUCCESS no HEAD de código. 0 threads pendentes.
+- **Riscos pendentes antes de uso real**, não confundidos com CI: não há projeto Supabase privado hospedado, dados financeiros reais, teste E2E de navegador/carteira real, Secret Scanning/Push Protection confirmados administrativamente ou backup independente de produção. Nada disso foi provisionado ou gasto.
+- **Status**: módulo pronto para avaliação automatizada final. Este commit documental altera o HEAD; revalidar required checks nele antes de promover ao canônico da main. Não fazer deploy.

@@ -1,6 +1,6 @@
 # M00 — Contratos compartilhados da fundação
 
-Work Order: `FAI-WO-M00-001`. Estado: contrato preliminar da PR #16; fica congelado somente após auditoria APPROVED, merge e atualização do checkpoint canônico. Não é uma API financeira implementada.
+Work Order: `FAI-WO-M00-001`. Estado: fundação M00 integrada por squash pela PR #16 em `04797f1d058b5a37586383b60a5a3e6dc4037926`, com 10/10 checks e política de zero aprovações humanas. Interfaces financeiras M01 são contrato separado.
 
 ## Fronteiras verificáveis
 
@@ -26,4 +26,4 @@ Work Order: `FAI-WO-M00-001`. Estado: contrato preliminar da PR #16; fica congel
 
 ## Lacunas deliberadas
 
-M00 não implementa contas financeiras, lançamentos, endpoints de negócio, adaptador de IA nem serviço hospedado. As interfaces desses módulos serão especificadas em seus Work Orders; este documento não as anuncia como existentes. Não há prova de uso em carteira Solana real, proteção de branch, backup de produção ou testes E2E em navegador.
+M00 não implementa contas financeiras, lançamentos, endpoints de negócio, adaptador de IA nem serviço hospedado. As interfaces desses módulos serão especificadas em seus Work Orders; este documento não as anuncia como existentes. Não há prova de uso em carteira Solana real, backup de produção ou testes E2E em navegador. Proteção da main e cinco required checks foram comprovados no GitHub.
