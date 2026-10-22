@@ -15,7 +15,7 @@ Status: FAI-M00 fecha Next.js 16, TypeScript, Node.js 24, npm e Supabase Auth We
 
 ## Direção de stack
 
-A fundação usa Next.js 16, TypeScript, Node.js 24 e npm, com `@supabase/ssr` e Supabase Auth. O Proxy do Next atualiza sessões via `getClaims()`; páginas do servidor validam claims e a allowlist do titular. A aplicação pode rodar sem configuração de backend para facilitar o scaffold, mas não libera acesso financeiro.
+A fundação usa Next.js 16, TypeScript, Node.js 24 e npm, com `@supabase/ssr` e Supabase Auth. O Proxy do Next atualiza sessões via `getClaims()`; páginas do servidor revalidam a sessão com `getUser()` e exigem autorização do titular no servidor e no banco. A aplicação pode rodar sem configuração de backend para facilitar o scaffold, mas não libera acesso financeiro.
 
 ## Identidade, carteira e dados
 
@@ -53,3 +53,8 @@ A fundação usa Next.js 16, TypeScript, Node.js 24 e npm, com `@supabase/ssr` e
 ## Autorização de titular único (M00, correção de segurança)
 
 O login Web3 pode autenticar qualquer carteira compatível; isso não concede acesso aos dados financeiros. O servidor valida a sessão ativa com `getUser()`, exige `FINANCE_AI_OWNER_USER_ID` e consulta `finance_is_authorized_owner()`. Cada política RLS de `finance_spaces` exige simultaneamente `auth.uid() = owner_id` e registro na allowlist privada com cardinalidade máxima de um titular. A allowlist permanece vazia na instalação inicial e só é provisionada no ambiente administrativo privado.
+
+## Referências vinculantes do M00
+
+- [Contratos de identidade, autorização e espaços](contracts-m00.md).
+- [Modelo inicial de ameaças](threat-model-m00.md).
