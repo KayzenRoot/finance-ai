@@ -33,3 +33,16 @@ A V1 não exige imagem. Cloudinary só será configurado se uma funcionalidade d
 ## Operação V1
 
 Sem pagamentos, sincronização bancária automática, assinatura de transação ou automação de decisão financeira. Open Finance exige gate próprio de viabilidade, consentimento, parceiro, segurança, custo e suporte. Reavaliar custos e limites de GitHub Actions antes de tornar privado o repositório.
+
+## Provisionamento seguro do titular (pré-produção)
+
+A migração cria `finance_private.authorized_owners` **vazia**. Não adicionar identificadores reais ao seed, às migrations ou aos exemplos públicos. Depois de configurar um projeto privado, autenticar a carteira do titular e identificar seu UUID no ambiente administrativo privado do Supabase, um administrador autorizado deverá registrar o mesmo UUID na tabela privada e em `FINANCE_AI_OWNER_USER_ID` no servidor da aplicação. Usar uma única identidade ativa; a restrição `singleton` do banco impede cadastrar uma segunda identidade.
+
+Exemplo **somente no SQL Editor privado**, substituindo o valor fictício por um UUID verificado sem copiá-lo para GitHub/CI:
+
+```sql
+insert into finance_private.authorized_owners (owner_id)
+values ('00000000-0000-0000-0000-000000000000');
+```
+
+Validar depois: acesso legítimo pelo servidor e Data API; outro login válido não pode criar seus próprios espaços; exclusão ou revogação deve suspender autorização imediatamente. Um projeto hospedado e backup independente continuam **pendentes**: este procedimento é documentação, não evidência de implantação.
