@@ -370,6 +370,93 @@ const { data: foreignCancel, error: foreignCancelError } = await second.client
 assert.ok(foreignCancelError);
 assert.equal(foreignCancel, null);
 
+// M03 Data API: a forecast must not be mistaken for a confirmed ledger balance.
+const {data: personalExpenseCategory, error: personalExpenseCategoryError} = await first.client
+  .from("finance_categories")
+  .insert({owner_id:first.userId,space_id:firstSpace.id,kind:"expense",name:"Synthetic M03 expense"})
+  .select("id").single();
+assert.equal(personalExpenseCategoryError,null);
+assert.ok(personalExpenseCategory?.id);
+
+const {data: payable, error: payableError} = await first.client
+  .rpc("finance_create_commitment",{
+    p_space_id:firstSpace.id,p_kind:"payable",p_description:"Synthetic invoice",
+    p_amount_cents:"125",p_due_date:"2026-02-01",p_confidence_percent:100,
+  });
+assert.equal(payableError,null);
+assert.ok(payable);
+
+const {data: receivable, error: receivableError} = await first.client
+  .rpc("finance_create_commitment",{
+    p_space_id:storeSpace.id,p_kind:"receivable",p_description:"Synthetic uncertain receivable",
+    p_amount_cents:"260",p_due_date:"2026-03-01",p_confidence_percent:25,
+  });
+assert.equal(receivableError,null);
+assert.ok(receivable);
+const {data: forecasts, error: forecastsError} = await first.client
+  .from("finance_commitment_forecast").select("id,kind,confidence_percent,projected_signed_cents");
+assert.equal(forecastsError,null);
+assert.equal(forecasts?.length,2);
+assert.equal(forecasts.find(x=>x.id===receivable)?.confidence_percent,25);
+const {data: balanceBeforeSettlement,error:balanceBeforeSettlementError}=await first.client
+  .from("finance_account_balances").select("current_balance_cents");
+assert.equal(balanceBeforeSettlementError,null);
+assert.equal(balanceBeforeSettlement.reduce((s,x)=>s+BigInt(x.current_balance_cents),0n),15652n,
+  "receivable forecast must not increase confirmed cash");
+
+const {data: forbiddenSettlement,error: forbiddenSettlementError}=await first.client
+  .from("finance_commitment_settlements")
+  .insert({owner_id:first.userId,space_id:firstSpace.id,kind:"payable",
+    commitment_id:payable,ledger_entry_id:incomeEntry}).select("id");
+assert.ok(forbiddenSettlementError,"direct settlement inserts are forbidden");
+assert.equal(forbiddenSettlement,null);
+const {data: crossSpaceSettle,error:crossSpaceSettleError}=await first.client
+  .rpc("finance_settle_commitment",{
+    p_commitment_id:payable,p_account_id:storeAccount.id,
+    p_category_id:expenseCategory.id,p_effective_date:"2026-02-01",
+  });
+assert.ok(crossSpaceSettleError,"settlement must reject an account in a different space");
+assert.equal(crossSpaceSettle,null);
+const {data: ledgerSettlement,error:ledgerSettlementError}=await first.client
+  .rpc("finance_settle_commitment",{
+    p_commitment_id:payable,p_account_id:personalAccount.id,
+    p_category_id:personalExpenseCategory.id,p_effective_date:"2026-02-01",
+  });
+assert.equal(ledgerSettlementError,null);
+assert.ok(ledgerSettlement);
+
+const {data: doubleSettlement,error:doubleSettlementError}=await first.client
+  .rpc("finance_settle_commitment",{
+    p_commitment_id:payable,p_account_id:personalAccount.id,
+    p_category_id:personalExpenseCategory.id,p_effective_date:"2026-02-01",
+  });
+assert.ok(doubleSettlementError,"double settlement must be rejected");
+assert.equal(doubleSettlement,null);
+const {data: rollbackSettlement,error:rollbackSettlementError}=await first.client
+  .rpc("finance_cancel_entry",{p_entry_id:ledgerSettlement});
+assert.ok(rollbackSettlementError,"M02 reversal cannot invalidate a settled M03 commitment");
+assert.equal(rollbackSettlement,null);
+const {data: balanceAfterSettlement,error:balanceAfterSettlementError}=await first.client
+  .from("finance_account_balances").select("current_balance_cents");
+assert.equal(balanceAfterSettlementError,null);
+assert.equal(balanceAfterSettlement.reduce((s,x)=>s+BigInt(x.current_balance_cents),0n),15527n);
+
+const {data: otherCommitments,error:otherCommitmentsError}=await second.client
+  .from("finance_commitments").select("id");
+assert.equal(otherCommitmentsError,null);
+assert.deepEqual(otherCommitments,[]);
+const {data: otherForecast,error:otherForecastError}=await second.client
+  .from("finance_commitment_forecast").select("id");
+assert.equal(otherForecastError,null);
+assert.deepEqual(otherForecast,[]);
+const {data: foreignSettlement,error:foreignSettlementError}=await second.client
+  .rpc("finance_settle_commitment",{
+    p_commitment_id:receivable,p_account_id:storeAccount.id,
+    p_category_id:expenseCategory.id,p_effective_date:"2026-02-01",
+  });
+assert.ok(foreignSettlementError);
+assert.equal(foreignSettlement,null);
+
 revokeSyntheticOwner(first.userId);
 const { data: afterRevocation, error: afterRevocationError } = await first.client.rpc("finance_is_authorized_owner");
 assert.equal(afterRevocationError, null);
@@ -393,9 +480,14 @@ const {data: revokedLedger,error: revokedLedgerError}=await first.client
   .from("finance_ledger_entries").select("id");
 assert.equal(revokedLedgerError,null);
 assert.deepEqual(revokedLedger,[],"revoked owner loses M02 ledger Data API access");
+const {data: revokedM03,error:revokedM03Error}=await first.client
+  .from("finance_commitments").select("id");
+assert.equal(revokedM03Error,null);
+assert.deepEqual(revokedM03,[],"revoked wallet loses M03 commitments");
+
 
 
 
 await first.client.auth.signOut();
 await second.client.auth.signOut();
-console.log("Synthetic EVM M00/M01/M02 Data API RLS, immutable corrections, transfers and revocation passed.");
+console.log("Synthetic EVM M00/M01/M02/M03 Data API RLS, settlement integrity, forecasts and revocation passed.");
