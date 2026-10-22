@@ -51,7 +51,7 @@ async function DashboardContent() {
         <>
           <h1>Acesso ainda não vinculado.</h1>
           <p>A carteira autenticou corretamente, mas esta conta não está autorizada a acessar o espaço financeiro.</p>
-          <div className="setup-note">O titular precisa configurar <code>FINANCE_AI_OWNER_USER_ID</code> no servidor e ser autorizado na lista privada do banco. Nenhum dado foi carregado. Nenhum dado foi carregado.</div>
+          <div className="setup-note">O titular precisa configurar <code>FINANCE_AI_OWNER_USER_ID</code> no servidor e ser autorizado na lista privada do banco. Nenhum dado foi carregado.</div>
         </>
       )}
     </div>
