@@ -1,28 +1,50 @@
 # Finance AI
 
-Assistente financeiro pessoal para organizar contas pessoais e da loja, projetar fluxo de caixa e explicar prioridades de pagamento com critérios verificáveis.
+Assistente financeiro privado para organizar finanças pessoais e da loja, projetar caixa e explicar prioridades com critérios verificáveis.
 
 ## Estado
 
-Planejamento inicial. Nenhum código de produto ou dado financeiro real deve ser armazenado neste repositório. Este repositório está público; credenciais, extratos, saldos e dados identificáveis são proibidos em commits, issues e exemplos.
+Planejamento e fundação de CI em revisão pela PR FAI-PLAN-001. Ainda não há aplicação, dados de produto, banco de produção ou deploy. O repositório é público: dados financeiros, endereços de carteira associados ao titular, credenciais, segredos e identificadores pessoais não podem entrar em commits, issues, exemplos, fixtures ou logs.
 
-## Hierarquia das fontes
+## Direção da V1
 
-1. `docs/checkpoint.md`
-2. `docs/decisions/DECISIONS.md` e ADRs aprovados
-3. `docs/scope.md`
-4. `docs/definition-of-done.md`
-5. `docs/architecture.md`
-6. `docs/requirements.md`
-7. `docs/project-overview.md`, `docs/security.md`, `docs/test-plan.md`, `docs/deployment.md`
-8. `docs/backlog.md` e issues GitHub
+- Espaços Pessoal e Loja separados, contas, lançamentos, obrigações, recebíveis, dívidas, projeções e prioridades explicáveis.
+- Supabase Postgres como banco selecionado; RLS e políticas por titular são obrigatórios.
+- Login com carteira usando Privy é uma meta, condicionada a provar a integração com Supabase e RLS. Carteiras e criptoativos serão somente leitura.
+- Valores de cripto ficam separados de caixa disponível para pagar contas.
+- IA explica cálculos determinísticos e pode preparar rascunhos que exigem confirmação.
+- Sem Open Finance, assinatura de transações, pagamentos ou movimentação automática na V1.
+- Cloudinary só será adicionado se uma funcionalidade real de imagem, como anexos de comprovantes, for aprovada.
 
-Decisões aprovadas, evidências de código e testes prevalecem sobre notas de conversa. Itens em revisão estão marcados como proposta.
+## Engenharia
 
-## Documentação canônica
+- CI: [docs/ci.md](docs/ci.md)
+- Workflows: GitHub Actions para lint, testes da aplicação quando houver scaffold, Dependency Review e CodeQL.
+- Dependabot agrupa atualizações semanais de Actions e npm.
+- SonarQube Cloud será integrado se a instalação no repositório e o plano OSS gratuito forem confirmados.
+- Plataforma de deploy será decidida depois; nenhum deploy está configurado.
 
-O Source Pack e o planejamento modular serão adicionados em `docs/` na PR `FAI-PLAN-001`. A implementação não começa até a revisão do Source Pack, fechamento das decisões técnicas bloqueadoras e aprovação dos Work Orders.
+## Source Pack
 
-## Privacidade
+- [Visão do projeto](docs/project-overview.md)
+- [Requisitos](docs/requirements.md)
+- [Escopo](docs/scope.md)
+- [Arquitetura](docs/architecture.md)
+- [Modelo de dados](docs/data-model.md)
+- [Segurança e privacidade](docs/security.md)
+- [CI e verificações](docs/ci.md)
+- [Plano de testes](docs/test-plan.md)
+- [Implantação e operação](docs/deployment.md)
+- [Backlog modular](docs/backlog.md)
+- [Definition of Done](docs/definition-of-done.md)
+- [Decisões](docs/decisions/DECISIONS.md)
+- [Open Finance](docs/open-finance.md)
+- [Checkpoint](docs/checkpoint.md)
 
-Use somente dados sintéticos em testes e exemplos. Dados reais ficam fora do Git e devem ser armazenados apenas em ambientes protegidos definidos pelo projeto.
+## Fluxo de trabalho
+
+Cada módulo tem Work Order e issue GitHub com dependências, critérios de aceite, testes, entregáveis e stop condition. PRs devem ser pequenas e vinculadas às issues. Trabalho paralelo começa após contratos compartilhados estarem aprovados.
+
+## Segurança
+
+Use apenas dados sintéticos em testes. Nunca coloque dados financeiros, bancários ou de carteira reais no GitHub. Não informe seed phrase, chave privada ou senha de carteira ao Finance AI.
