@@ -15,3 +15,7 @@ Work Order: FAI-WO-M02-001, issue #4. Base integrada M01: `2fcdb5bf21ddb5f329358
 ## Riscos e aceitação
 
 Testes pgTAP e smoke Data API sintéticos devem provar: IDOR e RLS para todos os objetos, FK composta entre espaço/conta/categoria, precisão, receita/despesa, soma-zero interna, cancelamento único, correção atômica e imutabilidade, revogação de titular, nenhuma operação financeira externa. UI deve permitir criar categoria, registrar lançamento, filtrar histórico, cancelar ou corrigir sem apagar trilhas. Sem deploy, chaves de produção ou dados reais. Não confundir prova do banco local com testes de navegador real.
+
+## Interface M02 (proposta em PR #18)
+
+A rota `/dashboard/ledger?space=personal|store` exige sessão Web3, titular único e RPC de allowlist. Consultas de conta, categoria e lançamentos são filtradas no Supabase por `owner_id` e `space_id`, além de RLS. Server Actions cadastram/renomeiam/arquivam categorias, criam entrada ou saída, estornam e corrigem via RPC; a UI não permite mutação SQL direta do ledger. Histórico limitado a 100 eventos na V1, incluindo estornos e substituições, sem pretensão de relatórios completos. O módulo ainda precisa validar CI e smoke da Data API M02, sem dados reais ou deploy.
