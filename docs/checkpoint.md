@@ -131,3 +131,8 @@ Auditoria identificou risco de reescrita silenciosa do saldo/data inicial de con
 - Supabase [39843603200](https://github.com/KayzenRoot/finance-ai/actions/runs/39843603200): SUCCESS. Log `Files=3, Tests=86, Result: PASS`; M00=21, M01=28, M02=37. EVM synthetic Data API smoke: owner, scope, immutable correction, denied initial-balance rewrite, transfers, revocation PASS. Synthetic restore rehearsal PASS.
 - Review finding fixed: account reference amount and date now freeze after M02 ledger activity; two new pgTAP negative cases and one REST case cover the bypass.
 - This checkpoint amendment itself creates a new Git SHA. Promote PR #18 to READY only after all five required checks and the security workflows are checked again against that final SHA. Do not merge or deploy in this work order.
+
+### M02 integrado e M03 iniciado (22/10/2026)
+
+- A PR #18 foi integrada por squash normal e sem bypass sobre a main protegida `96edc40dfafd8d111574dc1eda5ca7cf2a62cbb0`. Issue #4 fechada como `completed`. No HEAD `416185e1e38925496f4b67f55490462039255aa7`, 5/5 required checks SUCCESS, 86/86 pgTAP, smoke EVM RLS e restauração sintéticos, CI, CodeQL JS/TS, SonarCloud e Socket Security SUCCESS.
+- **M03 IN PROGRESS**: issue #5 / branch `feature/fai-m03-payables-receivables` a partir do SHA da main acima. Primeira fatia de tabelas de compromissos, planos recorrentes, settlements 1:1, RPCs e forecast isolado. M03 não declarado pronto antes dos testes sintéticos, interface e Evidence Bundle; não merge/deploy/gastos/dados reais.
