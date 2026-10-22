@@ -149,3 +149,8 @@ A PR #19 (`feature/fai-m03-payables-receivables`) passou inicialmente com 129 pg
 - Ruleset #25657724 ativo, 0 approvals humanos, cinco required checks SUCCESS, 0 threads, mergeable clean, sem bypass. **Finding P1 corrigido:** totais não dependem de limite de 100 itens da interface; view agregada invoker+RLS usa numeric exato em texto.
 - **Limites**: CI sintético não valida navegador com carteira real, ambiente Supabase hospedado, Secret Scanning/Push Protection administrativo ou backup externo de produção. Sem deploy, gastos, Pix/boleto, pagamentos, dados financeiros reais ou credenciais.
 - **Gate documental:** esta atualização do checkpoint gera novo HEAD. A PR só passa a READY após confirmação dos checks nesse SHA final, sem reaproveitar o bundle do HEAD anterior como prova do novo.
+
+### M03 integrado; M04 iniciado (22/10/2026)
+
+- PR #19 de HEAD `a5b9bac7416b6f1aaa4a897c8e3ff278909c83a3` integrada com squash merge normal e sem bypass na main protegida `62d9fd54b0d850376bb4f7ee430e11075be2c54e`; issue #5 encerrada. Gates no HEAD M03: cinco required SUCCESS, 138/138 pgTAP e EVM Data API sintética, CodeQL JS/TS, SonarCloud e Socket Security SUCCESS.
+- M04: issue #6 / branch `feature/fai-m04-debt-register` criada a partir da main acima. Primeira implementação de dívidas/snapshots append-only, RLS, campos desconhecidos NULL, taxas com fonte e unidade explícitas, sem estimativas de custo. **IN PROGRESS; não comprovar testes que ainda não rodaram.** Sem merge M04, deploy, custos ou dados financeiros reais.
