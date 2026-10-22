@@ -76,6 +76,19 @@ test("finance spaces migration enforces owner-only database access", async () =>
     assert.deepEqual(crossDelete.rows, []);
     await db.exec("rollback;");
 
+    await db.exec(`
+      delete from finance_private.authorized_owners
+      where owner_id = '10000000-0000-4000-8000-000000000001';
+      begin;
+      set local role authenticated;
+      select set_config('request.jwt.claim.sub', '10000000-0000-4000-8000-000000000001', true);
+    `);
+    const revokedOwnerRows = await db.query("select id from public.finance_spaces;");
+    assert.deepEqual(revokedOwnerRows.rows, []);
+    const revokedAuthorization = await db.query("select public.finance_is_authorized_owner() as allowed;");
+    assert.equal(revokedAuthorization.rows[0].allowed, false);
+    await db.exec("rollback;");
+
     const rls = await db.query(`select relrowsecurity, relforcerowsecurity
       from pg_class where oid = 'public.finance_spaces'::regclass;`);
     assert.deepEqual(rls.rows, [{ relrowsecurity: true, relforcerowsecurity: true }]);
