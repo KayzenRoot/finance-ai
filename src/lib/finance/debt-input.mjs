@@ -7,7 +7,7 @@ const field=(v,k)=>{const x=v.get(k);return typeof x==="string"?x.trim():"";};
 /** @param {string} x @returns {string|null} */
 export function money(x){
  if(!x)return null;
- const cents=parseBrlCents(x);if(BigInt(cents)<BigInt(0))throw Error("negative");
+ const cents=parseBrlCents(x);if(BigInt(cents)<BigInt(0))throw new Error("negative");
  return cents;
 }
 
@@ -15,9 +15,9 @@ export function money(x){
 export function percent(x){
  if(!x)return null;
  const s=x.replace(",",".");
- if(!/^\d{1,5}(\.\d{1,8})?$/.test(s))throw Error("rate format");
+ if(!/^\d{1,5}(\.\d{1,8})?$/.test(s))throw new Error("rate format");
  const [whole,frac=""]=s.split(".");
- if(BigInt(whole)*BigInt(100000000)+BigInt(frac.padEnd(8,"0"))>BigInt(1000000000000))throw Error("rate too high");
+ if(BigInt(whole)*BigInt(100000000)+BigInt(frac.padEnd(8,"0"))>BigInt(1000000000000))throw new Error("rate too high");
  return s;
 }
 
@@ -27,6 +27,6 @@ export function terms(v,key){
  source=field(v,key+"_source")||null;
  if((value===null)!==(period===null)||(value===null)!==(source===null)||
  (period!==null&& !["daily","monthly","annual"].includes(period))||
- (source!==null&&source.length>240))throw Error("incomplete rate provenance");
+ (source!==null&&source.length>240))throw new Error("incomplete rate provenance");
  return {value,period,source};
 }
