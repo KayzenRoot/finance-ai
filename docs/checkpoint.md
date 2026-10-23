@@ -2,25 +2,21 @@
 
 ## Estado canônico atual — 22/10/2026
 
-- **M00 integrado** via PR #16, squash SHA `04797f1d058b5a37586383b60a5a3e6dc4037926`, após 10/10 checks SUCCESS. Issue #2 fechada.
-- **Ruleset** #25657724: `main` protegida, `required_approving_review_count=0`, cinco checks exigidos, squash, histórico linear, branch up-to-date, sem force push, deleção ou bypass.
-- **M01 integrado**: PR #17 squash-merged na `main` protegida `2fcdb5bf21ddb5f3293585a554f56525d34d2bd7`, issue #3 closed; 49/49 pgTAP e gates de segurança aprovados no HEAD da PR.
-- **Evidência de banco**: run [39831779921](https://github.com/KayzenRoot/finance-ai/actions/runs/39831779921), migração/RLS/Web3 e restauração sintéticas SUCCESS. Testes M00/M01 verificados; sem projeto privado de produção, pagamentos ou dados reais.
-- **Produção separada**: secret scanning/push protection ainda precisam de confirmação administrativa, bem como backup independente, implantação e testes de carteira real. O histórico abaixo inclui bloqueios anteriores já resolvidos; o estado acima prevalece.
+- **Último módulo integrado: M03.** A `main` protegida está em `62d9fd54b0d850376bb4f7ee430e11075be2c54e`, resultante do squash merge normal da PR #19. Issues #2–#5 concluídas: M00–M03 integrados. Os SHAs históricos de M00 e M01 permanecem registrados abaixo.
+- **M04 não integrado:** Work Order `FAI-WO-M04-001`, issue #6 aberta e [PR #20](https://github.com/KayzenRoot/finance-ai/pull/20) aberta na `feature/fai-m04-debt-register`. HEAD de código e documentação anteriormente auditado: `7530d44e3333a8577aaddff0bf1d69b971b24031`. O merge depende de nova auditoria após a Correction Delta.
+- **Evidências anteriores no HEAD 7530d44:** cinco checks obrigatórios, CI, CodeQL JS/TS, SonarCloud e Socket SUCCESS; Supabase 178/178 pgTAP, smoke EVM/Data API M00–M04 e restore sintético PASS. Estes resultados não certificam automaticamente commits futuros.
+- **Risco de qualidade aberto:** SonarCloud publicou **35 novos issues** com Quality Gate PASS e cobertura de código novo indicada como **0,0%**. A severidade de cada issue não está verificada; correções de código devem ser limitadas às NECESSARY após triagem por regra/arquivo. Enquanto isso, M04 permanece `CORRECTION REQUIRED` para aprovação de auditoria, mesmo quando os required checks passam.
+- **Ruleset** #25657724: `main` protegida, zero approvals humanos obrigatórios, cinco checks exigidos, squash, histórico linear, branch atualizada, sem force push, deleção ou bypass.
+- **Produção separada:** projeto Supabase hospedado, dados reais e deploy não estão autorizados. Secret scanning/push protection administrativos, backup externo e testes com carteira/navegador reais continuam sem comprovação nesta etapa.
 
-## Baseline
+## Baseline operacional
 
-- Repositório: KayzenRoot/finance-ai.
-- Branch principal: main.
-- Baseline inicial: 7f6997f8e5797e43f2cc8c1b282998112cb09265.
-- Branch de planejamento: planning/FAI-PLAN-001-source-pack.
-- HEAD integrado na `main`: `2fcdb5bf21ddb5f3293585a554f56525d34d2bd7` (M01, PR #17).
-- Branch local de implementação: `feature/fai-m00-secure-foundation`.
-- Código de produto: scaffold Next.js 16/Supabase SSR na PR #16, incluindo correção de titular único. Consulte o HEAD atual da PR para evitar referência obsoleta.
-- Projeto Supabase hospedado para Finance AI: ainda não criado.
-- CI de aplicação: workflows de app e Supabase adicionados. Lint, typecheck, teste PGlite/RLS, `npm audit --audit-level=high` e build passaram localmente; a execução completa com Docker, pgTAP, login Web3 e restauração sintética também passou no GitHub Actions.
-- Open Finance: avaliação documental; nenhuma integração.
-- Dados reais: proibidos no repositório público.
+- Repositório: `KayzenRoot/finance-ai`; branch principal: `main`.
+- HEAD integrado da `main` na data desta auditoria: `62d9fd54b0d850376bb4f7ee430e11075be2c54e` (M03, PR #19).
+- Incremento ativo e único: `FAI-WO-M04-001`, branch `feature/fai-m04-debt-register`, PR #20 e issue #6. Não iniciar M05 até aprovação e integração autorizada do M04.
+- Baseline inicial do projeto: `7f6997f8e5797e43f2cc8c1b282998112cb09265`; planejamento original: `planning/FAI-PLAN-001-source-pack`.
+- Stack já integrada: Next.js 16, Supabase SSR, autenticação Web3, contas/transferências, lançamentos auditáveis e compromissos (M00–M03). M04 acrescenta dívidas e observações imutáveis somente na PR.
+- CI: GitHub Actions com lint, typecheck, testes, build, dependências e segurança; workflow Supabase de escopo seletivo. Apenas dados sintéticos. Nenhum projeto financeiro real hospedado.
 
 ## Evidência observada
 
@@ -149,3 +145,32 @@ A PR #19 (`feature/fai-m03-payables-receivables`) passou inicialmente com 129 pg
 - Ruleset #25657724 ativo, 0 approvals humanos, cinco required checks SUCCESS, 0 threads, mergeable clean, sem bypass. **Finding P1 corrigido:** totais não dependem de limite de 100 itens da interface; view agregada invoker+RLS usa numeric exato em texto.
 - **Limites**: CI sintético não valida navegador com carteira real, ambiente Supabase hospedado, Secret Scanning/Push Protection administrativo ou backup externo de produção. Sem deploy, gastos, Pix/boleto, pagamentos, dados financeiros reais ou credenciais.
 - **Gate documental:** esta atualização do checkpoint gera novo HEAD. A PR só passa a READY após confirmação dos checks nesse SHA final, sem reaproveitar o bundle do HEAD anterior como prova do novo.
+
+### M03 integrado; M04 iniciado (22/10/2026)
+
+- PR #19 de HEAD `a5b9bac7416b6f1aaa4a897c8e3ff278909c83a3` integrada com squash merge normal e sem bypass na main protegida `62d9fd54b0d850376bb4f7ee430e11075be2c54e`; issue #5 encerrada. Gates no HEAD M03: cinco required SUCCESS, 138/138 pgTAP e EVM Data API sintética, CodeQL JS/TS, SonarCloud e Socket Security SUCCESS.
+- M04: issue #6 / branch `feature/fai-m04-debt-register` criada a partir da main acima. Primeira implementação de dívidas/snapshots append-only, RLS, campos desconhecidos NULL, taxas com fonte e unidade explícitas, sem estimativas de custo. **IN PROGRESS; não comprovar testes que ainda não rodaram.** Sem merge M04, deploy, custos ou dados financeiros reais.
+
+### M04 — findings de auditoria e gate de revalidação (22/10/2026)
+
+- PR [#20](https://github.com/KayzenRoot/finance-ai/pull/20), branch `feature/fai-m04-debt-register`, main M03 `62d9fd54b0d850376bb4f7ee430e11075be2c54e` preservada.
+- HEAD de código anterior `69a96182b3d80e173da4f081c68e28c9ad010eff`: [Supabase 39854017534](https://github.com/KayzenRoot/finance-ai/actions/runs/39854017534) SUCCESS, `Files=5, Tests=176, Result: PASS`; smoke EVM Data API M00–M04, RLS, proveniência e revogação PASS; restore sintético PASS. CI 39854017456, Dependency Review 39854017437, CodeQL JS/TS 39854017739, SonarCloud e Socket Security SUCCESS, 5/5 required checks. Este bundle não substitui a revalidação do SHA que contém os findings novos.
+- Findings corrigidos: (1) edição de snapshot exibia campos vazios, podendo ocultar valores previamente conhecidos no painel mais recente; agora a interface pré-preenche dados existentes e torna explícita a limpeza intencional; (2) parâmetro de taxa com mais de oito casas podia sofrer arredondamento silencioso ao salvar em `numeric(14,8)`; agora RPC rejeita sobreprecisão de juros e CET. Dois pgTAP + testes REST negativos adicionados, **178 testes esperados**, ainda não declarados PASS no novo commit.
+- Não realizar merge, deploy, gastos, dados financeiros reais nem tornar READY sem nova rodada de checks e Evidence Bundle final.
+
+### M04 — 178/178 confirmados no HEAD de implementação `2c53e65e2d5f3eda4ba7444d03e6e81fee8344ca`
+
+- PR [#20](https://github.com/KayzenRoot/finance-ai/pull/20), branch `feature/fai-m04-debt-register`, base main protegida `62d9fd54b0d850376bb4f7ee430e11075be2c54e`, sem merge. Issue [#6](https://github.com/KayzenRoot/finance-ai/issues/6) aberta.
+- **Supabase** [39856659393](https://github.com/KayzenRoot/finance-ai/actions/runs/39856659393) SUCCESS: `Files=5, Tests=178, Result: PASS` (M00=21, M01=28, M02=37, M03=52, M04=40). Smoke EVM Data API sintético M00–M04 confirmou origem/validade das taxas, histórico por data, RLS/IDOR, owner/space, revogação e restauração de dados sintéticos.
+- **CI** [39856659528](https://github.com/KayzenRoot/finance-ai/actions/runs/39856659528) SUCCESS, Markdown lint e Application checks (lint, TypeScript, unit, build). **Dependency Review** [39856659556](https://github.com/KayzenRoot/finance-ai/actions/runs/39856659556) SUCCESS. **CodeQL JS/TS** [39856659471](https://github.com/KayzenRoot/finance-ai/actions/runs/39856659471) SUCCESS; CodeQL genérico `neutral` não required. SonarCloud e Socket Security PR Alerts / Project Report SUCCESS. Ruleset #25657724 ativo, 0 aprovações humanas, cinco required checks SUCCESS, 0 threads, sem bypass.
+- Achados resolvidos: snapshots que escondiam campos conhecidos pela edição parcial da UI, precisão de taxas arredondadas silenciosamente em `numeric(14,8)`, erros Markdown, compatibilidade BigInt/TS e delimitadores pgTAP. Agora a edição vem preenchida, limpeza é explícita, fonte e data da nova observação são obrigatórias, e sobreprecisão de juros/CET causa erro verificável.
+- **GATE:** esta atualização documental cria novo SHA. Os resultados acima são verificados no HEAD anterior de implementação e **não certificam automaticamente o novo SHA documental**. A PR só ficará READY após conferir no commit documental definitivo os cinco required checks, Supabase/pgTAP, EVM, CodeQL, SonarCloud, Socket, ruleset e zero threads.
+- Não houve merge do M04, deploy, custos, transações, dados financeiros reais nem credenciais de produção.
+
+### FAI-WO-M04-001 — Correction Delta SONAR-TRIAGE + DOC-STALE (22/10/2026; proposta)
+
+- **Referência auditável:** [PR #20, comentário #6352937008](https://github.com/KayzenRoot/finance-ai/pull/20#issuecomment-6352937008). Base `62d9fd54b0d850376bb4f7ee430e11075be2c54e`, HEAD anterior `7530d44e3333a8577aaddff0bf1d69b971b24031`. Esta atualização reconcilia o cabeçalho e o baseline sem apagar a cronologia.
+- **SONAR-TRIAGE pendente:** comentário SonarCloud para a PR #20 informa 35 novos issues, 0 hotspots, 0,0% de coverage em new code e Quality Gate PASS. A API pública do SonarCloud e o detalhamento por issue não estavam acessíveis nesta auditoria; **nenhuma severidade individual, regra, arquivo ou falso positivo foi inventado ou classificado como resolvido**. Até obter os 35 registros, não é seguro declarar ausência de achados HIGH/CRITICAL ou zerar issues. Critério para correção: somente NECESSARY, no mesmo WO e PR.
+- **Cobertura:** `package.json` executa `node --test tests/db/*.test.mjs` sem geração configurada de coverage. O CI `.github/workflows/ci.yml` não publica relatório de cobertura para o SonarCloud; a indicação de 0,0% **não significa ausência de testes** nem comprova a cobertura real. Coleta e ingestão de relatório deverão ser propostas com baseline validado, sem alterar a política de Quality Gate nesta Correction Delta.
+- **Gates comprovados antes deste delta:** [CI 39857396269](https://github.com/KayzenRoot/finance-ai/actions/runs/39857396269), [Supabase 39857396724](https://github.com/KayzenRoot/finance-ai/actions/runs/39857396724) (`Files=5, Tests=178, Result: PASS`, smoke EVM/Data API e restore sintéticos), [CodeQL JS/TS 39857396746](https://github.com/KayzenRoot/finance-ai/actions/runs/39857396746), [Dependency Review 39857396344](https://github.com/KayzenRoot/finance-ai/actions/runs/39857396344), SonarCloud e Socket SUCCESS no `7530d44`. Copilot não realizou review substantivo por quota; ruleset exige zero approvals.
+- **STOP CONDITION:** após este commit, revalidar HEAD, checks, Sonar e proteção. Se 35 issues permanecerem sem severidade comprovada, veredito `BLOCKED` para liberação de merge e `CORRECTION REQUIRED` para o WO, sem mascarar incerteza. Não alterar a `main`, fazer merge/deploy/gastos, usar dados reais ou iniciar M05. O executor propõe o delta; promoção à verdade integrada requer auditoria e merge autorizado.

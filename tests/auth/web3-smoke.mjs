@@ -473,6 +473,61 @@ const {data: foreignSettlement,error:foreignSettlementError}=await second.client
 assert.ok(foreignSettlementError);
 assert.equal(foreignSettlement,null);
 
+// M04: synthetic source-based debt history and owner-only Data API access.
+const {data:debtId,error:debtError}=await first.client.rpc("finance_create_debt",{
+ p_space_id:firstSpace.id,p_creditor:"Synthetic bank creditor",
+});
+assert.equal(debtError,null);assert.ok(debtId);
+const {data:observation,error:observationError}=await first.client.rpc("finance_record_debt_observation",{
+ p_debt_id:debtId,p_source_reference:"Synthetic bank note",p_as_of_date:"2026-02-01",
+ p_balance_cents:"123456",p_minimum_due_cents:"15000",p_due_date:"2026-02-10",
+ p_interest_percent:"2.125",p_interest_period:"monthly",p_interest_source:"Synthetic contract",
+});
+assert.equal(observationError,null);assert.ok(observation);
+const {data:latestDebt,error:latestDebtError}=await first.client.from("finance_debt_latest")
+ .select("id,balance_cents,interest_percent,interest_period,cet_percent,has_missing_cost_data")
+ .eq("id",debtId).single();
+assert.equal(latestDebtError,null);
+assert.equal(latestDebt.balance_cents,"123456");
+assert.equal(latestDebt.interest_period,"monthly");
+assert.equal(latestDebt.cet_percent,null,"unknown CET must remain unknown");
+assert.equal(latestDebt.has_missing_cost_data,true);
+const {data:badRate,error:badRateError}=await first.client.rpc("finance_record_debt_observation",{
+ p_debt_id:debtId,p_source_reference:"Synthetic note",p_as_of_date:"2026-02-02",
+ p_interest_percent:"3.5",
+});
+assert.ok(badRateError,"unknown rate unit must be rejected");assert.equal(badRate,null);
+const {data:roundedInterest,error:roundedInterestError}=await first.client.rpc("finance_record_debt_observation",{
+ p_debt_id:debtId,p_source_reference:"Overprecise synthetic rate",p_as_of_date:"2026-02-02",
+ p_interest_percent:"2.123456789",p_interest_period:"monthly",p_interest_source:"Synthetic contract",
+});
+assert.ok(roundedInterestError,"overprecision must be rejected rather than rounded");
+assert.equal(roundedInterest,null);
+const {data:roundedCET,error:roundedCETError}=await first.client.rpc("finance_record_debt_observation",{
+ p_debt_id:debtId,p_source_reference:"Overprecise synthetic CET",p_as_of_date:"2026-02-02",
+ p_cet_percent:"31.123456789",p_cet_period:"annual",p_cet_source:"Synthetic contract",
+});
+assert.ok(roundedCETError,"overprecision CET must be rejected rather than rounded");
+assert.equal(roundedCET,null);
+const {data:oldDebtObservation,error:oldDebtError}=await first.client.rpc("finance_record_debt_observation",{
+ p_debt_id:debtId,p_source_reference:"Older synthetic note",p_as_of_date:"2026-01-01",
+ p_balance_cents:"999999",
+});
+assert.equal(oldDebtError,null);assert.ok(oldDebtObservation);
+const {data:afterHistory,error:debtHistoryError}=await first.client.from("finance_debt_latest")
+ .select("balance_cents").eq("id",debtId).single();
+assert.equal(debtHistoryError,null);
+assert.equal(afterHistory.balance_cents,"123456","older data must not override newer source");
+const {data:forbiddenUpdate,error:forbiddenUpdateError}=await first.client
+ .from("finance_debt_observations").update({balance_cents:"1"}).eq("id",observation).select("id");
+assert.ok(forbiddenUpdateError,"direct history rewrite forbidden");assert.equal(forbiddenUpdate,null);
+const {data:otherDebts,error:otherDebtsError}=await second.client.from("finance_debt_latest").select("id");
+assert.equal(otherDebtsError,null);assert.deepEqual(otherDebts,[]);
+const {data:otherAppend,error:otherAppendError}=await second.client.rpc("finance_record_debt_observation",{
+ p_debt_id:debtId,p_source_reference:"Foreign synthetic note",p_as_of_date:"2026-02-02",
+});
+assert.ok(otherAppendError,"foreign wallet may not edit debt");assert.equal(otherAppend,null);
+
 revokeSyntheticOwner(first.userId);
 const { data: afterRevocation, error: afterRevocationError } = await first.client.rpc("finance_is_authorized_owner");
 assert.equal(afterRevocationError, null);
@@ -500,10 +555,13 @@ const {data: revokedM03,error:revokedM03Error}=await first.client
   .from("finance_commitments").select("id");
 assert.equal(revokedM03Error,null);
 assert.deepEqual(revokedM03,[],"revoked wallet loses M03 commitments");
+const {data:revokedM04,error:revokedM04Error}=await first.client.from("finance_debt_latest").select("id");
+assert.equal(revokedM04Error,null);assert.deepEqual(revokedM04,[],"revoked owner loses debt history");
+
 
 
 
 
 await first.client.auth.signOut();
 await second.client.auth.signOut();
-console.log("Synthetic EVM M00/M01/M02/M03 Data API RLS, settlement integrity, forecasts and revocation passed.");
+console.log("Synthetic EVM M00/M01/M02/M03/M04 Data API RLS, debt source integrity and revocation passed.");
