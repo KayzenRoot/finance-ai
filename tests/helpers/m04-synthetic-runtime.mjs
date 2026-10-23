@@ -26,18 +26,21 @@ export function syntheticDB({
  function query(table){
   const querySpec={table,filters:[],sorts:[],limit:null};
   trace.queries.push(querySpec);
+  const complete=()=>{
+   const error=table==="finance_spaces"?spaceError:debtError;
+   let data=[...(tables[table]??[])];
+   for(const [field,value] of querySpec.filters)data=data.filter(row=>row[field]===value);
+   if(querySpec.limit!==null)data=data.slice(0,querySpec.limit);
+   return Promise.resolve({data,error});
+  };
   const builder={
    select(){return builder;},
-   eq(field,value){querySpec.filters.push([field,value]);return builder;},
+   eq(field,value){
+    querySpec.filters.push([field,value]);
+    return table==="finance_spaces"?complete():builder;
+   },
    order(field,settings){querySpec.sorts.push([field,settings]);return builder;},
-   limit(size){querySpec.limit=size;return builder;},
-   then(resolve,reject){
-    const error=table==="finance_spaces"?spaceError:debtError;
-    let data=[...(tables[table]??[])];
-    for(const [field,value] of querySpec.filters)data=data.filter(row=>row[field]===value);
-    if(querySpec.limit!==null)data=data.slice(0,querySpec.limit);
-    return Promise.resolve({data,error}).then(resolve,reject);
-   }
+   limit(size){querySpec.limit=size;return complete();}
   };
   return builder;
  }
