@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test:ci": "node --test tests/db/*.test.mjs",
     "supabase:test": "supabase test db --local",
-    "test:wallet": "node tests/auth/web3-smoke.mjs"
+    "test:wallet": "node tests/auth/web3-smoke.mjs",
+    "test:coverage": "node --test --experimental-test-coverage --test-coverage-include='src/lib/finance/*.mjs' --test-reporter=spec --test-reporter-destination=stdout --test-reporter=lcov --test-reporter-destination=coverage/lcov.info tests/db/*.test.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",
