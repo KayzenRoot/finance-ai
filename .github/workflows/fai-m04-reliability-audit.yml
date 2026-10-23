@@ -1,0 +1,24 @@
+# Temporary, read-only collector for exactly the pinned Sonar check. Remove after readback.
+name: FAI M04 Reliability readback
+on:
+  pull_request:
+    types: [synchronize]
+    paths:
+      - .github/workflows/fai-m04-reliability-audit.yml
+permissions:
+  contents: read
+  checks: read
+jobs:
+  inspect:
+    if: github.event.pull_request.number == 20
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Fetch Sonar annotations on pinned source commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api 'repos/KayzenRoot/finance-ai/check-runs/120339228325/annotations?per_page=100' |
+            jq -c '.[] | {path,start_line,end_line,annotation_level,title,message}'
