@@ -16,3 +16,10 @@ O SonarQube Cloud **não ingere LCOV em Automatic Analysis**. Sua documentação
 - A geração LCOV deve ser verificada no job da PR, não apenas em ambiente de ensaio. `LH/LF` e `BRH/BRF` têm que vir do relatório bruto, com arquivo `SF:src/lib/finance/debt-input.mjs` e hashes do HEAD auditado.
 - Após alteração da branch: confirmar CI, cinco required checks, 178/178 pgTAP, EVM/Data API/RLS/proveniência/revogação, restauro sintético, CodeQL, SonarCloud e Socket. Manter `CORRECTION REQUIRED` até decidir riscos remanescentes e ter cobertura TSX/Server Actions efetiva; não relatar essa lacuna como resolvida.
 - **STOP:** sem merge, deploy, gastos, dados reais ou M05. Inventário histórico `docs/sonar-m04-issue-inventory.md` inalterado.
+
+## Medição ampliada de arquivos TypeScript e TSX
+
+- A suíte sintética executa os módulos originais `debt-actions.ts` e `page.tsx` via carregador restrito ao ambiente de teste com `typescript.transpileModule` e `inlineSourceMap`/`inlineSources`; o reporter nativo Node 24 deve atribuir as linhas executadas aos caminhos TS/TSX originais.
+- `test:coverage` inclui explicitamente a rotina pura, a Server Action e a página TSX. `scripts/verify-m04-lcov.mjs` exige registros `SF` e contadores inteiros positivos `LF/LH` e `BRF/BRH` para **cada um dos três módulos**, e falha se a origem TSX não estiver representada. Os valores definitivos só podem ser citados após execução no GitHub CI do novo HEAD.
+- O teste sintético adicional confere, na renderização Pessoal e Loja, filtros simultâneos de `owner_id` e `space_id`, ausência de exibição cruzada de dívidas de outros espaços e não consulta a ambientes reais. Isso valida os filtros de chamada presentes na UI, **não substitui RLS no banco nem comprova integração Next de produção**.
+- Mesmo com cobertura numérica TS/TSX, ela descreve apenas as partes executadas por mocks, sem autenticação de rede, comportamento de navegador, hidratação ou captura do SonarCloud Automatic Analysis. Não declarar 100% da aplicação nem modificar tokens, modos de análise remotos ou Quality Gate.

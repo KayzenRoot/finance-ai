@@ -150,3 +150,37 @@ test("M04 UI fails closed on finance query error",async()=>{
  assert.match(html,/Dívidas indisponíveis/);
  assert.doesNotMatch(html,/Cadastrar dívida/);
 });
+
+test("M04 UI enforces Pessoal versus Loja query filters for owner and space",async()=>{
+ const storeSpace="b5000000-0000-4000-8000-0000000000b5";
+ const records=[
+  {id:DEBT,owner_id:OWNER,space_id:SPACE,creditor:"Personal synthetic",
+   balance_cents:null,minimum_due_cents:null,due_date:null,interest_percent:null,
+   interest_period:null,interest_source:null,cet_percent:null,cet_period:null,cet_source:null,
+   penalty_fixed_cents:null,consequences:null,source_reference:null,as_of_date:null,
+   has_missing_cost_data:true},
+  {id:"d5000000-0000-4000-8000-0000000000d5",owner_id:OWNER,space_id:storeSpace,
+   creditor:"Store synthetic",balance_cents:null,minimum_due_cents:null,due_date:null,
+   interest_percent:null,interest_period:null,interest_source:null,cet_percent:null,
+   cet_period:null,cet_source:null,penalty_fixed_cents:null,consequences:null,
+   source_reference:null,as_of_date:null,has_missing_cost_data:true}
+ ];
+ const spaces=[
+  {id:SPACE,owner_id:OWNER,space_type:"personal",display_name:"Pessoal"},
+  {id:storeSpace,owner_id:OWNER,space_type:"store",display_name:"Loja"}
+ ];
+ for(const [space,expected,excluded,id] of [
+  ["personal","Personal synthetic","Store synthetic",SPACE],
+  ["store","Store synthetic","Personal synthetic",storeSpace]
+ ]){
+  resetSynthetic(withAuth({spaces,debts:records}));
+  const html=await htmlOf({space});
+  assert.match(html,new RegExp(expected));
+  assert.doesNotMatch(html,new RegExp(excluded));
+  const queries=trace.queries.filter(q=>q.table==="finance_debt_latest"||
+   q.table==="finance_debt_observations");
+  assert.equal(queries.length,2);
+  for(const query of queries)
+   assert.deepEqual(query.filters,[["owner_id",OWNER],["space_id",id]]);
+ }
+});
