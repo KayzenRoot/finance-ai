@@ -1,5 +1,5 @@
 import Link from "next/link";
-import {Suspense} from "react";
+import {Suspense, type ReactNode} from "react";
 import {redirect} from "next/navigation";
 import {createClient} from "@/lib/supabase/server";
 import {formatBrlCents} from "@/lib/finance/money.mjs";
@@ -62,20 +62,15 @@ async function DebtContent({searchParams}:{searchParams:Promise<Params>}){
   failed=Boolean(a.error||b.error);debts=(a.data??[]) as Debt[];observations=(b.data??[]) as Observation[];
  }
  const hidden=<input type="hidden" name="space_type" value={type}/>;
- return <main className="dashboard-shell"><section className="dashboard-main"><div className="finance-workspace">
-  <header><p className="eyebrow">FINANCE AI · M04</p><h1>Cadastro de dívidas</h1>
-  <p>Registre apenas condições conhecidas e sua origem. Campos vazios não são considerados zero.</p>
-  <Link href="/dashboard/commitments">← Voltar a contas a pagar</Link></header>
-  {p.notice&&msg[p.notice]&&<output className="finance-notice block">{msg[p.notice]}</output>}
-  <nav className="finance-tabs" aria-label="Espaço financeiro">
-   <Link className={type==="personal"?"finance-tab active":"finance-tab"} href="/dashboard/debts?space=personal">Pessoal</Link>
-   <Link className={type==="store"?"finance-tab active":"finance-tab"} href="/dashboard/debts?space=store">Loja</Link>
-  </nav>
-  {!space?<section className="finance-panel"><h2>Crie um espaço financeiro</h2>
-   <Link href={"/dashboard?space="+type}>Abrir contas</Link></section>
-  :failed?<section className="finance-panel"><h2>Dívidas indisponíveis</h2>
-   <p>A migração M04 precisa estar aplicada no ambiente privado.</p></section>
-  :<>
+ let debtPanel: ReactNode;
+ if (!space) {
+  debtPanel=<section className="finance-panel"><h2>Crie um espaço financeiro</h2>
+   <Link href={"/dashboard?space="+type}>Abrir contas</Link></section>;
+ } else if (failed) {
+  debtPanel=<section className="finance-panel"><h2>Dívidas indisponíveis</h2>
+   <p>A migração M04 precisa estar aplicada no ambiente privado.</p></section>;
+ } else {
+  debtPanel=<>
    <section className="finance-panel"><h2>Novo credor</h2><form action={createDebt} className="finance-form">
     {hidden}<input type="hidden" name="space_id" value={space.id}/>
     <label>Credor<input name="creditor" required minLength={1} maxLength={180} placeholder="Credor informado"/></label>
@@ -124,6 +119,17 @@ async function DebtContent({searchParams}:{searchParams:Promise<Params>}){
      </div></div>)}
      {debts.length===0&&<p>Nenhuma dívida cadastrada.</p>}
    </section>
-  </>}
+  </>;
+ }
+ return <main className="dashboard-shell"><section className="dashboard-main"><div className="finance-workspace">
+  <header><p className="eyebrow">FINANCE AI · M04</p><h1>Cadastro de dívidas</h1>
+  <p>Registre apenas condições conhecidas e sua origem. Campos vazios não são considerados zero.</p>
+  <Link href="/dashboard/commitments">← Voltar a contas a pagar</Link></header>
+  {p.notice&&msg[p.notice]&&<output className="finance-notice block">{msg[p.notice]}</output>}
+  <nav className="finance-tabs" aria-label="Espaço financeiro">
+   <Link className={type==="personal"?"finance-tab active":"finance-tab"} href="/dashboard/debts?space=personal">Pessoal</Link>
+   <Link className={type==="store"?"finance-tab active":"finance-tab"} href="/dashboard/debts?space=store">Loja</Link>
+  </nav>
+  {debtPanel}
  </div></section></main>;
 }
