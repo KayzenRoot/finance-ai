@@ -27,8 +27,9 @@ function editCents(value:string|null):string{
 }
 function rate(value:string|null,period:string|null,source:string|null){
  if(value===null)return "Não informado";
- const unit=period==="monthly"?"mês":period==="daily"?"dia":"ano";
- return value+"% ao "+unit+" · Fonte: "+(source??"Não informada");
+ const unitByPeriod:Record<string,string>={daily:"dia",monthly:"mês",annual:"ano"};
+ const unit=period===null?null:(unitByPeriod[period]??null);
+ return value+(unit?"% ao "+unit:"% · Período desconhecido")+" · Fonte: "+(source??"Não informada");
 }
 export default function DebtPage({searchParams}:{searchParams:Promise<Params>}){
  return <Suspense fallback={<main className="dashboard-shell"><section className="dashboard-main">
@@ -65,7 +66,7 @@ async function DebtContent({searchParams}:{searchParams:Promise<Params>}){
   <header><p className="eyebrow">FINANCE AI · M04</p><h1>Cadastro de dívidas</h1>
   <p>Registre apenas condições conhecidas e sua origem. Campos vazios não são considerados zero.</p>
   <Link href="/dashboard/commitments">← Voltar a contas a pagar</Link></header>
-  {p.notice&&msg[p.notice]&&<p role="status" className="finance-notice">{msg[p.notice]}</p>}
+  {p.notice&&msg[p.notice]&&<output className="finance-notice block">{msg[p.notice]}</output>}
   <nav className="finance-tabs" aria-label="Espaço financeiro">
    <Link className={type==="personal"?"finance-tab active":"finance-tab"} href="/dashboard/debts?space=personal">Pessoal</Link>
    <Link className={type==="store"?"finance-tab active":"finance-tab"} href="/dashboard/debts?space=store">Loja</Link>
