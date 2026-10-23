@@ -1,0 +1,34 @@
+# FAI-WO-M04-001: temporary, read-only extraction of existing Sonar check annotations.
+# Remove this file after evidence read-back. No product code, secrets or deployments.
+name: FAI M04 Sonar annotations read-only audit
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    paths:
+      - .github/workflows/fai-m04-sonar-annotations-audit.yml
+
+permissions:
+  contents: read
+  checks: read
+
+jobs:
+  sonar-annotations:
+    name: Collect 33 Sonar check annotations
+    if: github.event.pull_request.number == 20
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Read annotations from pinned prior Sonar check
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          response="$(gh api -H 'Accept: application/vnd.github+json'             'repos/KayzenRoot/finance-ai/check-runs/120159882670/annotations?per_page=100')"
+          count="$(jq 'length' <<< "$response")"
+          echo "FAI-M04 prior HEAD: 9019e437f445cafa35f0bea85184a4bc2b2af832"
+          echo "Sonar check run: 120159882670"
+          echo "Returned check annotations: $count"
+          jq -c '.[] | {path, start_line, end_line, annotation_level, title, message, raw_details}' <<< "$response"
+          test "$count" -eq 33
